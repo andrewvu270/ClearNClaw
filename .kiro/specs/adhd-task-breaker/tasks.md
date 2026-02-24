@@ -189,20 +189,31 @@
     - Client-side validation rejects whitespace-only input
     - _Requirements: 1.1, 1.3, 1.5, 1.6_
 
-- [ ] 8. Implement pages
+- [x] 8. Implement pages
+
+
+
+
+
   - [ ] 8.1 Build `SignInPage` with Three.js animated background
     - Lazy-load React Three Fiber scene (floating pixel characters or subtle 3D elements)
     - Supabase Auth UI for sign-in
+
+
     - Redirect to `/tasks` on successful auth
     - _Requirements: 6.1, 6.2_
   - [ ] 8.2 Build `TasksPage` with Active/Done tabs
     - Task input form at top
     - Tab switcher: Active / Done
     - List of TaskCards filtered by active tab using filter utilities
+
+
     - "Add Sub-Task" button on expanded TaskCards
     - Empty states for each tab
     - Smooth animated transitions between tabs (200-400ms)
     - _Requirements: 1.1, 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 8.5_
+
+
   - [ ] 8.3 Build `ClawMachinePage` integrating existing claw machine component
     - Display current coin balance
     - Play button (disabled when 0 coins, shows insufficient coins message)
