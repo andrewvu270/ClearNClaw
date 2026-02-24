@@ -7,20 +7,31 @@ const AGENT_TIMEOUT_MS = 10_000
 
 /**
  * Sends a Big Task description to the DigitalOcean Agent
- * and returns an emoji + list of sub-tasks.
+ * using the OpenAI chat completions format.
+ * The agent already has ADHD-friendly breakdown instructions configured.
  * Aborts after 10 seconds.
  */
 export async function breakDownTask(description: string): Promise<AgentResponse> {
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), AGENT_TIMEOUT_MS)
 
+  const endpoint = (import.meta.env.VITE_AGENT_ENDPOINT as string).replace(/\/+$/, '')
+
   try {
     const response = await fetch(
-      import.meta.env.VITE_AGENT_ENDPOINT as string,
+      `${endpoint}/api/v1/chat/completions`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description }),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_AGENT_ACCESS_KEY}`,
+        },
+        body: JSON.stringify({
+          messages: [
+            { role: 'user', content: description },
+          ],
+          stream: false,
+        }),
         signal: controller.signal,
       }
     )
@@ -31,11 +42,26 @@ export async function breakDownTask(description: string): Promise<AgentResponse>
 
     const data = await response.json()
 
-    if (!data.emoji || !Array.isArray(data.subTasks)) {
+    const content = data.choices?.[0]?.message?.content
+    if (!content) {
+      throw new Error('No content in agent response')
+    }
+
+    // Extract JSON from response (agent may include extra text despite instructions)
+    const jsonMatch = content.match(/\{[\s\S]*\}/)
+    if (!jsonMatch) {
+      throw new Error('Could not find JSON in agent response')
+    }
+
+    const parsed = JSON.parse(jsonMatch[0])
+
+    // Agent uses "subtasks" (lowercase), we normalize to "subTasks"
+    const subTasks: string[] = parsed.subtasks ?? parsed.subTasks
+    if (!parsed.emoji || !Array.isArray(subTasks)) {
       throw new Error('Malformed agent response')
     }
 
-    return { emoji: data.emoji, subTasks: data.subTasks }
+    return { emoji: parsed.emoji, subTasks }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new Error('Agent request timed out. Please try again.')

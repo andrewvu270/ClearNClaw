@@ -226,14 +226,28 @@
     - Empty state when no toys
     - _Requirements: 4.1, 4.2, 4.3, 4.4_
 
-- [ ] 9. Implement auth flow and session management
+- [x] 9. Implement auth flow and session management
+
+
+
+
+
   - [ ] 9.1 Wire up Supabase auth listener for session management
     - On sign-in: create or retrieve profile, redirect to `/tasks`
+
+
+
+
     - On sign-out: clear session, redirect to `/sign-in`
     - On session expired: redirect to `/sign-in`
     - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ] 10. Polish and responsive design
+
+
+- [x] 10. Polish and responsive design
+
+
+
   - [ ] 10.1 Apply responsive layout across all pages (320px to 1440px)
     - Test and adjust layouts for mobile, tablet, and desktop breakpoints
     - Ensure all touch targets are minimum 44x44px

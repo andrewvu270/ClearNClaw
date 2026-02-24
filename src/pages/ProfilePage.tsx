@@ -58,7 +58,7 @@ export function ProfilePage() {
               >
                 {ut.toy?.spriteCollected ? (
                   <img
-                    src={`data:${ut.toy.mimeType || 'image/png'};base64,${ut.toy.spriteCollected}`}
+                    src={ut.toy.spriteCollected}
                     alt={ut.toy.name}
                     className="w-12 h-12 object-contain mb-2"
                   />

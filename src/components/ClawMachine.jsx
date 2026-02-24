@@ -1,8 +1,8 @@
 import { useEffect, useRef, useCallback, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { getCachedToys } from '../utils/toyCache'
 import './ClawMachine.css'
 
-const M = 2.2
 const CORNER_BUFFER = 16
 const MACHINE_BUFFER = { x: 36, y: 16 }
 
@@ -28,6 +28,7 @@ export default function ClawMachine() {
   const collectionBoxRef = useRef(null)
   const collectionArrowRef = useRef(null)
   const [loading, setLoading] = useState(true)
+  const keyActiveRef = useRef({ ArrowRight: false, ArrowUp: false })
 
   // mutable game state stored in refs so we don't re-render on every frame
   const gameRef = useRef({
@@ -155,9 +156,9 @@ export default function ClawMachine() {
     el.style.setProperty('--sh', `${size.sh}px`)
     el.style.setProperty('--st', `${size.st}px`)
     el.style.setProperty('--sl', `${size.sl}px`)
-    el.style.setProperty('--s-normal', `url(data:${size.mime};base64,${size.sNormal})`)
-    el.style.setProperty('--s-grabbed', `url(data:${size.mime};base64,${size.sGrabbed || size.sNormal})`)
-    el.style.setProperty('--s-collected', `url(data:${size.mime};base64,${size.sCollected || size.sNormal})`)
+    el.style.setProperty('--s-normal', `url(${size.sNormal})`)
+    el.style.setProperty('--s-grabbed', `url(${size.sGrabbed || size.sNormal})`)
+    el.style.setProperty('--s-collected', `url(${size.sCollected || size.sNormal})`)
 
     boxRef.current.append(el)
 
@@ -213,9 +214,9 @@ export default function ClawMachine() {
     collectedToyEl.style.setProperty('--sh', `${toyData.sh}px`)
     collectedToyEl.style.setProperty('--st', `${toyData.st}px`)
     collectedToyEl.style.setProperty('--sl', `${toyData.sl}px`)
-    collectedToyEl.style.setProperty('--s-normal', `url(data:${toyData.mime};base64,${toyData.sNormal})`)
-    collectedToyEl.style.setProperty('--s-grabbed', `url(data:${toyData.mime};base64,${toyData.sGrabbed || toyData.sNormal})`)
-    collectedToyEl.style.setProperty('--s-collected', `url(data:${toyData.mime};base64,${toyData.sCollected || toyData.sNormal})`)
+    collectedToyEl.style.setProperty('--s-normal', `url(${toyData.sNormal})`)
+    collectedToyEl.style.setProperty('--s-grabbed', `url(${toyData.sGrabbed || toyData.sNormal})`)
+    collectedToyEl.style.setProperty('--s-collected', `url(${toyData.sCollected || toyData.sNormal})`)
 
     collectionBoxRef.current.appendChild(wrapper)
     setTimeout(() => {
@@ -384,26 +385,9 @@ export default function ClawMachine() {
   const fetchToys = async () => {
     const g = gameRef.current
     try {
-      const { data, error } = await supabase
-        .from('toys')
-        .select('name, width, height, sprite_width, sprite_height, sprite_top, sprite_left, mime_type, sprite_normal, sprite_grabbed, sprite_collected, group')
-      if (error) throw error
-      if (!data) return
-      data.forEach((toy) => {
-        g.toys[toy.name] = {
-          w: toy.width * M,
-          h: toy.height * M,
-          sw: toy.sprite_width * M,
-          sh: toy.sprite_height * M,
-          st: toy.sprite_top * M,
-          sl: toy.sprite_left * M,
-          mime: toy.mime_type || 'image/png',
-          sNormal: toy.sprite_normal,
-          sGrabbed: toy.sprite_grabbed,
-          sCollected: toy.sprite_collected,
-          group: toy.group,
-        }
-      })
+      const toys = await getCachedToys()
+      if (!toys) return
+      g.toys = toys
       const ogKeys = Object.keys(g.toys).filter((k) => g.toys[k].group === 'og')
       const otherKeys = Object.keys(g.toys).filter((k) => g.toys[k].group !== 'og')
       g.sortedToys = new Array(12).fill('').map(() => {
@@ -483,6 +467,46 @@ export default function ClawMachine() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // ---- Keyboard controls ----
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'ArrowRight') {
+        if (keyActiveRef.current.ArrowRight) return // prevent key-repeat
+        if (horiBtnRef.current?.dataset.locked === 'true') return
+        keyActiveRef.current.ArrowRight = true
+        onHoriBtnDown()
+      } else if (e.key === 'ArrowUp') {
+        if (keyActiveRef.current.ArrowUp) return
+        if (vertBtnRef.current?.dataset.locked === 'true') return
+        keyActiveRef.current.ArrowUp = true
+        onVertBtnDown()
+      }
+    }
+
+    const handleKeyUp = (e) => {
+      if (e.key === 'ArrowRight') {
+        if (!keyActiveRef.current.ArrowRight) return
+        keyActiveRef.current.ArrowRight = false
+        if (horiBtnRef.current?.dataset.locked === 'true') return
+        onHoriBtnUp()
+      } else if (e.key === 'ArrowUp') {
+        if (!keyActiveRef.current.ArrowUp) return
+        keyActiveRef.current.ArrowUp = false
+        if (vertBtnRef.current?.dataset.locked === 'true') return
+        onVertBtnUp()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    window.addEventListener('keyup', handleKeyUp)
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
   // ---- Render ----
 
   return (
@@ -519,18 +543,20 @@ export default function ClawMachine() {
             ref={horiBtnRef}
             data-locked="true"
             onMouseDown={onHoriBtnDown}
-            onTouchStart={onHoriBtnDown}
+            onTouchStart={(e) => { e.preventDefault(); onHoriBtnDown(); }}
             onMouseUp={onHoriBtnUp}
             onTouchEnd={onHoriBtnUp}
+            onContextMenu={(e) => e.preventDefault()}
           ></button>
           <button
             className="vert-btn pix"
             ref={vertBtnRef}
             data-locked="true"
             onMouseDown={onVertBtnDown}
-            onTouchStart={onVertBtnDown}
+            onTouchStart={(e) => { e.preventDefault(); onVertBtnDown(); }}
             onMouseUp={onVertBtnUp}
             onTouchEnd={onVertBtnUp}
+            onContextMenu={(e) => e.preventDefault()}
           ></button>
           <div className="cover right">
             <div className="instruction pix"></div>
