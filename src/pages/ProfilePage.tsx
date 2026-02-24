@@ -3,11 +3,14 @@ import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
 import { EmptyState } from '../components/EmptyState'
 import { getProfile, getToyCollection } from '../services/profileService'
+// @ts-expect-error — toyCache is a JS module
+import { getCachedToys } from '../utils/toyCache'
 import type { UserProfile, UserToy } from '../types'
 
 export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [toys, setToys] = useState<UserToy[]>([])
+  const [toyData, setToyData] = useState<Record<string, { sCollected?: string }>>({})
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -15,6 +18,9 @@ export function ProfilePage() {
       const uid = session.user.id
       getProfile(uid).then(setProfile)
       getToyCollection(uid).then(setToys)
+    })
+    getCachedToys().then((data: Record<string, { sCollected?: string }> | null) => {
+      if (data) setToyData(data)
     })
   }, [])
 
@@ -51,30 +57,33 @@ export function ProfilePage() {
           />
         ) : (
           <div className="grid grid-cols-3 gap-3">
-            {toys.map(ut => (
-              <div
-                key={ut.id}
-                className="bg-base-800 rounded-xl border border-base-700 p-3 flex flex-col items-center text-center"
-              >
-                {ut.toy?.spriteCollected ? (
-                  <img
-                    src={ut.toy.spriteCollected}
-                    alt={ut.toy.name}
-                    className="w-12 h-12 object-contain mb-2"
-                  />
-                ) : (
-                  <div className="w-12 h-12 bg-base-700 rounded mb-2 flex items-center justify-center text-2xl">
-                    🧸
-                  </div>
-                )}
-                <p className="text-[10px] text-gray-300 font-body truncate w-full">
-                  {ut.toy?.name ?? 'Unknown'}
-                </p>
-                {ut.count > 1 && (
-                  <p className="text-[9px] text-neon-cyan mt-0.5">×{ut.count}</p>
-                )}
-              </div>
-            ))}
+            {toys.map(ut => {
+              const sprite = toyData[ut.toyId]
+              return (
+                <div
+                  key={ut.id}
+                  className="bg-base-800 rounded-xl border border-base-700 p-3 flex flex-col items-center text-center"
+                >
+                  {sprite?.sCollected ? (
+                    <img
+                      src={sprite.sCollected}
+                      alt={ut.toyId}
+                      className="w-12 h-12 object-contain mb-2"
+                    />
+                  ) : (
+                    <div className="w-12 h-12 bg-base-700 rounded mb-2 flex items-center justify-center text-2xl">
+                      🧸
+                    </div>
+                  )}
+                  <p className="text-[10px] text-gray-300 font-body truncate w-full">
+                    {ut.toyId}
+                  </p>
+                  {ut.count > 1 && (
+                    <p className="text-[9px] text-neon-cyan mt-0.5">×{ut.count}</p>
+                  )}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>

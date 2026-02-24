@@ -53,7 +53,7 @@ export async function ensureProfile(userId: string): Promise<UserProfile> {
 export async function getToyCollection(userId: string): Promise<UserToy[]> {
   const { data, error } = await supabase
     .from('user_toys')
-    .select('*, toys(*)')
+    .select('*')
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
@@ -66,20 +66,5 @@ export async function getToyCollection(userId: string): Promise<UserToy[]> {
     count: row.count as number,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
-    toy: row.toys ? {
-      id: (row.toys as Record<string, unknown>).id as string,
-      name: (row.toys as Record<string, unknown>).name as string,
-      group: ((row.toys as Record<string, unknown>).group as string) ?? null,
-      width: (row.toys as Record<string, unknown>).width as number,
-      height: (row.toys as Record<string, unknown>).height as number,
-      spriteNormal: ((row.toys as Record<string, unknown>).sprite_normal as string) ?? null,
-      spriteGrabbed: ((row.toys as Record<string, unknown>).sprite_grabbed as string) ?? null,
-      spriteCollected: ((row.toys as Record<string, unknown>).sprite_collected as string) ?? null,
-      spriteWidth: ((row.toys as Record<string, unknown>).sprite_width as number) ?? null,
-      spriteHeight: ((row.toys as Record<string, unknown>).sprite_height as number) ?? null,
-      spriteTop: ((row.toys as Record<string, unknown>).sprite_top as number) ?? null,
-      spriteLeft: ((row.toys as Record<string, unknown>).sprite_left as number) ?? null,
-      mimeType: ((row.toys as Record<string, unknown>).mime_type as string) ?? null,
-    } : undefined,
   }))
 }

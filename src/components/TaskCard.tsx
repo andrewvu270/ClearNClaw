@@ -30,6 +30,8 @@ export function TaskCard({
   const [newSubTask, setNewSubTask] = useState('')
 
   const progress = calculateProgress(task.subTasks)
+  const doneCount = task.subTasks.filter(st => st.completed).length
+  const totalCount = task.subTasks.length
 
   const handleSaveName = () => {
     const trimmed = editValue.trim()
@@ -50,53 +52,63 @@ export function TaskCard({
   }
 
   return (
-    <div className="bg-base-800 rounded-xl border border-base-700 overflow-hidden shadow-lg shadow-black/20">
-      {/* Header */}
-      <button
+    <div className="bg-base-800 rounded-2xl border border-base-700 overflow-hidden shadow-lg shadow-black/20">
+      {/* Hero section — big emoji + progress ring */}
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-3 p-3 min-h-[44px] hover:bg-base-700/50 transition-colors text-left"
+        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setExpanded(!expanded) } }}
+        className="flex flex-col items-center pt-5 pb-4 px-4 cursor-pointer hover:bg-base-700/30 transition-colors"
         aria-expanded={expanded}
       >
-        <CircularProgressEmoji emoji={task.emoji} progress={progress} size={48} />
-        <div className="flex-1 min-w-0">
-          {editing ? (
-            <input
-              value={editValue}
-              onChange={e => setEditValue(e.target.value)}
-              onBlur={handleSaveName}
-              onKeyDown={e => { if (e.key === 'Enter') handleSaveName() }}
-              onClick={e => e.stopPropagation()}
-              className="w-full bg-base-900 text-white text-sm px-2 py-1 rounded border border-neon-cyan/30 outline-none focus:border-neon-cyan"
-              autoFocus
-            />
-          ) : (
-            <p className={`text-sm font-body truncate ${task.completed ? 'text-gray-500 line-through' : 'text-white'}`}>
-              {task.name}
-            </p>
-          )}
-          <p className="text-[10px] text-gray-500 mt-0.5">
-            {task.subTasks.filter(st => st.completed).length}/{task.subTasks.length} done
-          </p>
+        {/* Task name + actions */}
+        <div className="w-full flex items-start justify-between mb-3">
+          <div className="flex-1 min-w-0 pr-2">
+            {editing ? (
+              <input
+                value={editValue}
+                onChange={e => setEditValue(e.target.value)}
+                onBlur={handleSaveName}
+                onKeyDown={e => { if (e.key === 'Enter') handleSaveName() }}
+                onClick={e => e.stopPropagation()}
+                className="w-full bg-base-900 text-white text-sm px-2 py-1 rounded border border-neon-cyan/30 outline-none focus:border-neon-cyan"
+                autoFocus
+              />
+            ) : (
+              <p className={`font-body text-sm ${task.completed ? 'text-gray-500 line-through' : 'text-white'}`}>
+                {task.name}
+              </p>
+            )}
+          </div>
+          <div className="flex gap-0.5 shrink-0">
+            <button
+              onClick={e => { e.stopPropagation(); setEditing(true) }}
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-500 hover:text-neon-cyan transition-colors text-sm"
+              aria-label="Edit task name"
+            >
+              ✏️
+            </button>
+            <button
+              onClick={e => { e.stopPropagation(); onDelete(task.id) }}
+              className="min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-500 hover:text-neon-pink transition-colors text-sm"
+              aria-label="Delete task"
+            >
+              🗑️
+            </button>
+          </div>
         </div>
-        <div className="flex gap-1">
-          <button
-            onClick={e => { e.stopPropagation(); setEditing(true) }}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-neon-cyan transition-colors"
-            aria-label="Edit task name"
-          >
-            ✏️
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); onDelete(task.id) }}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-neon-pink transition-colors"
-            aria-label="Delete task"
-          >
-            🗑️
-          </button>
-        </div>
-      </button>
 
-      {/* Expanded sub-tasks */}
+        {/* Big circular progress + emoji */}
+        <CircularProgressEmoji emoji={task.emoji} progress={progress} size={120} />
+
+        {/* Progress text */}
+        <p className="text-gray-400 text-xs font-body mt-3">
+          {doneCount}/{totalCount} done
+        </p>
+      </div>
+
+      {/* Sub-tasks list */}
       <AnimatePresence>
         {expanded && (
           <motion.div
@@ -106,8 +118,8 @@ export function TaskCard({
             transition={{ duration: 0.25 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-3 border-t border-base-700">
-              <div className="mt-2 space-y-1">
+            <div className="px-4 pb-4 border-t border-base-700">
+              <div className="mt-3 space-y-1">
                 {task.subTasks.map(st => (
                   <SubTaskItem
                     key={st.id}
@@ -118,7 +130,7 @@ export function TaskCard({
                   />
                 ))}
               </div>
-              {/* Add sub-task input */}
+              {/* Add sub-task */}
               <div className="flex gap-2 mt-3">
                 <input
                   value={newSubTask}

@@ -1,14 +1,10 @@
-*,
-::before,
-::after {
+.claw-machine *,
+.claw-machine ::before,
+.claw-machine ::after {
   box-sizing: border-box;
 }
 
-body {
-  padding: 0;
-  margin: 0;
-  font-family: sans-serif;
-  background-color: transparent;
+:root {
   --brown: #0a1628;
   --blue: #22d3ee;
   --dark-blue: #0f2847;
@@ -400,7 +396,7 @@ body {
   opacity: 0.5;
 }
 
-button {
+.claw-machine button {
   position: relative;
   z-index: 5;
   --w: 24px;
@@ -418,7 +414,7 @@ button {
   transform: rotate(90deg);
 }
 
-.active {
+.claw-machine .active {
   animation: pulse infinite 1s;
   pointer-events: all;
 }
@@ -487,12 +483,12 @@ button {
   font-size: 10px;
 }
 
-a {
+.claw-machine a {
   color: var(--brown);
   text-decoration: none;
 }
 
-a:hover {
+.claw-machine a:hover {
   text-decoration: underline;
 }
 
