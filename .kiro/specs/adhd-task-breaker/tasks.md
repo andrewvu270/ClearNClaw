@@ -64,17 +64,35 @@
     - **Property 9: Done tab filter correctness**
     - **Validates: Requirements 7.3**
 
-- [ ] 3. Checkpoint - Make sure all tests are passing
+- [x] 3. Checkpoint - Make sure all tests are passing
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Implement Supabase database schema and RPC functions
+
+
+
+
+
+- [x] 4. Implement Supabase database schema and RPC functions
+
+
+
+
+
+
+
   - [ ] 4.1 Create Supabase migration for profiles, big_tasks, sub_tasks, user_toys tables with Row Level Security policies
     - Create tables matching the ER diagram in the design document
+
+
     - Enable RLS on all tables, add policies so users can only access their own data
     - _Requirements: 2.4, 6.1, 8.1, 8.2_
   - [ ] 4.2 Create Supabase RPC function `complete_subtask_and_check` for atomic sub-task completion + coin award
     - Atomically marks sub-task complete, checks if all siblings are done, marks big task complete and awards coin if so
     - _Requirements: 2.2, 2.4_
+
+
 
 - [ ] 5. Implement service layer
   - [ ] 5.1 Implement Agent Service (`src/services/agentService.ts`)
@@ -83,10 +101,17 @@
     - _Requirements: 1.1, 1.4_
   - [ ] 5.2 Implement Task Service (`src/services/taskService.ts`)
     - `createBigTask`, `getBigTasks`, `updateBigTaskName`, `deleteBigTask`, `toggleSubTask`, `updateSubTaskName`, `deleteSubTask`, `addSubTask`
+
+
     - Use Supabase client for all CRUD operations
     - `deleteBigTask` cascades to delete all associated sub-tasks
     - _Requirements: 1.1, 2.1, 2.4, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
-  - [ ]* 5.3 Write property test for Big Task deletion cascades (Property 4)
+  - [x]* 5.3 Write property test for Big Task deletion cascades (Property 4)
+
+
+
+
+
     - **Property 4: Big Task deletion cascades to Sub-Tasks**
     - **Validates: Requirements 8.3**
   - [ ] 5.4 Implement Coin Service (`src/services/coinService.ts`)

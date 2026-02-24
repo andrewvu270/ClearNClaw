@@ -26,13 +26,25 @@ export interface UserProfile {
 export interface Toy {
   id: string
   name: string
-  imageUrl: string
-  rarity: string
+  group: string | null
+  width: number
+  height: number
+  spriteNormal: string | null
+  spriteGrabbed: string | null
+  spriteCollected: string | null
+  spriteWidth: number | null
+  spriteHeight: number | null
+  spriteTop: number | null
+  spriteLeft: number | null
+  mimeType: string | null
 }
 
 export interface UserToy {
   id: string
+  userId: string
   toyId: string
-  toy: Toy
-  wonAt: string
+  count: number
+  createdAt: string
+  updatedAt: string
+  toy?: Toy
 }
