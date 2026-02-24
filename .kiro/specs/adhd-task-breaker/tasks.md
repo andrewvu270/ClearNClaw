@@ -112,18 +112,40 @@
 
 
 
+
+
+
+
+
+
+
     - **Property 4: Big Task deletion cascades to Sub-Tasks**
+
     - **Validates: Requirements 8.3**
-  - [ ] 5.4 Implement Coin Service (`src/services/coinService.ts`)
+  - [x] 5.4 Implement Coin Service (`src/services/coinService.ts`)
+
+
+
     - `getCoinBalance`, `spendCoin` (deducts 1, returns false if balance is 0), `awardCoin`
     - _Requirements: 2.2, 3.1, 3.2_
-  - [ ]* 5.5 Write property test for coin deduction on play (Property 5)
+  - [x]* 5.5 Write property test for coin deduction on play (Property 5)
+
+
+
     - **Property 5: Coin deduction on Claw Machine play**
     - **Validates: Requirements 3.1**
+
+
+
   - [ ]* 5.6 Write property test for Big Task completion awards coin (Property 2)
     - **Property 2: Big Task completion awards exactly 1 Coin**
+
+
     - **Validates: Requirements 2.2**
-  - [ ] 5.7 Implement Claw Machine Service (`src/services/clawMachineService.ts`)
+
+
+  - [-] 5.7 Implement Claw Machine Service (`src/services/clawMachineService.ts`)
+
     - `getAvailableToys`, `awardToy` — reads from toys table, inserts into user_toys
     - _Requirements: 3.3_
   - [ ]* 5.8 Write property test for toy collection grows on win (Property 6)
