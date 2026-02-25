@@ -14,6 +14,11 @@ export function SignInPage() {
     })
   }, [navigate])
 
+  // Always show animations on sign-in page regardless of low-stim mode
+  useEffect(() => {
+    document.documentElement.classList.remove('low-stim')
+  }, [])
+
   const [email, setEmail] = useState('')
   const [otpSent, setOtpSent] = useState(false)
   const [otp, setOtp] = useState(['', '', '', '', '', ''])

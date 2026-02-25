@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { UserProfile, UserToy } from '../types'
+import { createDemoTaskIfNeeded } from './taskService'
 
 export async function getProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
@@ -19,6 +20,7 @@ export async function getProfile(userId: string): Promise<UserProfile> {
 
 /**
  * Ensures a profile exists for the given user. Creates one if missing.
+ * Also creates a demo task for new users with zero tasks.
  */
 export async function ensureProfile(userId: string): Promise<UserProfile> {
   const { data } = await supabase
@@ -28,6 +30,8 @@ export async function ensureProfile(userId: string): Promise<UserProfile> {
     .single()
 
   if (data) {
+    // Existing user - check if they need a demo task
+    await createDemoTaskIfNeeded(userId)
     return {
       id: data.id as string,
       coins: data.coins as number,
@@ -42,6 +46,9 @@ export async function ensureProfile(userId: string): Promise<UserProfile> {
     .single()
 
   if (error || !newProfile) throw error ?? new Error('Failed to create profile')
+
+  // New user - create demo task
+  await createDemoTaskIfNeeded(userId)
 
   return {
     id: newProfile.id as string,

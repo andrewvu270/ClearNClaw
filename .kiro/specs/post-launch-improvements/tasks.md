@@ -105,7 +105,7 @@
     - _Requirements: 2.2, 2.3_
 
 
-  - [ ] 3.5 Update animated background components to respect `StimModeContext`
+  - [x] 3.5 Update animated background components to respect `StimModeContext`
     - Aurora, DotGrid, ThreeBackground: render nothing when `isLowStim` is true
 
 
@@ -113,19 +113,29 @@
 
 
     - _Requirements: 2.1, 2.4_
-  - [ ] 3.6 Add Low Stim Mode toggle to `ProfilePage`
+  - [x] 3.6 Add Low Stim Mode toggle to `ProfilePage`
     - Toggle switch with label, uses `StimModeContext.toggle()`
     - _Requirements: 2.1, 2.5_
-  - [ ] 3.7 Wrap `App` component with `StimModeProvider`
+  - [x] 3.7 Wrap `App` component with `StimModeProvider`
     - _Requirements: 2.1_
 
-- [ ] 4. Onboarding Demo Task
-  - [ ] 4.1 Create `createDemoTaskIfNeeded` function in `taskService.ts`
+- [x] 4. Onboarding Demo Task
+
+
+
+
+  - [x] 4.1 Create `createDemoTaskIfNeeded` function in `taskService.ts`
+
+
     - Check if user has zero big tasks, create demo task with 4 sub-tasks and "low" energy tag
     - _Requirements: 3.1, 3.2_
-  - [ ] 4.2 Call `createDemoTaskIfNeeded` from `ensureProfile` (single trigger point)
+  - [x] 4.2 Call `createDemoTaskIfNeeded` from `ensureProfile` (single trigger point)
+
+
     - _Requirements: 3.1_
-  - [ ] 4.3 Write unit test for demo task creation
+  - [x] 4.3 Write unit test for demo task creation
+
+
     - Verify demo task has correct name, 4 sub-tasks, and "low" energy tag
     - _Requirements: 3.1, 3.2, 3.3_
 

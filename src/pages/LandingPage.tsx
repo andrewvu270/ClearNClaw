@@ -16,6 +16,11 @@ export function LandingPage() {
     })
   }, [navigate])
 
+  // Always show animations on landing page regardless of low-stim mode
+  useEffect(() => {
+    document.documentElement.classList.remove('low-stim')
+  }, [])
+
   return (
     <div className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden px-4">
       {/* Aurora background on all screens */}

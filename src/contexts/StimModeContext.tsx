@@ -17,7 +17,14 @@ export function StimModeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const initializeStimMode = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
+      
+      if (!session) {
+        // No session - remove low-stim class to show full animations on landing/signin
+        document.documentElement.classList.remove('low-stim')
+        setIsLowStimState(false)
+        setUserId(null)
+        return
+      }
 
       setUserId(session.user.id)
 
@@ -42,10 +49,29 @@ export function StimModeProvider({ children }: { children: ReactNode }) {
       // Apply class to document element
       if (lowStimMode) {
         document.documentElement.classList.add('low-stim')
+      } else {
+        document.documentElement.classList.remove('low-stim')
       }
     }
 
     initializeStimMode()
+
+    // Listen for auth state changes (logout)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT' || !session) {
+        // Remove low-stim class on logout
+        document.documentElement.classList.remove('low-stim')
+        setIsLowStimState(false)
+        setUserId(null)
+      } else if (event === 'SIGNED_IN' && session) {
+        // Re-initialize on sign in
+        initializeStimMode()
+      }
+    })
+
+    return () => {
+      subscription.unsubscribe()
+    }
   }, [])
 
   const setLowStim = async (value: boolean) => {

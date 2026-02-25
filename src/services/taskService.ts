@@ -184,3 +184,31 @@ export async function addSubTask(bigTaskId: string, name: string): Promise<SubTa
 
   return mapSubTask(data)
 }
+
+/**
+ * Creates a demo task for new users if they have zero big tasks.
+ * Called from ensureProfile to provide immediate onboarding experience.
+ */
+export async function createDemoTaskIfNeeded(userId: string): Promise<void> {
+  const { count, error: countError } = await supabase
+    .from('big_tasks')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', userId)
+
+  if (countError) throw countError
+
+  if (count === 0) {
+    await createBigTask(
+      userId,
+      '🎮 Build Your First Win',
+      '🎮',
+      [
+        { name: 'Press Start', emoji: '▶️' },
+        { name: 'Complete 1 action', emoji: '✅' },
+        { name: 'Win your first coin', emoji: '🪙' },
+        { name: 'Play claw machine', emoji: '🕹️' },
+      ],
+      'low'
+    )
+  }
+}

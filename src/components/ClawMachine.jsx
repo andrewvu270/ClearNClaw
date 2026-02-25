@@ -369,7 +369,6 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
     const { armJoint, arm, vertRail } = g.objects
     clearObjInterval(armJoint)
     deactivateBtn(vertBtnRef.current)
-    onTurnEnd?.()
     getClosestToy()
     setTimeout(() => {
       arm.el.classList.add('open')
@@ -388,7 +387,13 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
                   next: () => {
                     resumeMove(armJoint, {
                       moveKey: 'y',
-                      next: dropToy,
+                      next: () => {
+                        dropToy()
+                        // Call onTurnEnd after entire sequence completes
+                        setTimeout(() => {
+                          onTurnEnd?.()
+                        }, 1000)
+                      },
                     })
                   },
                 })
