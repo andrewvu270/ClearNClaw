@@ -425,8 +425,9 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
         }
       }
       
+      // 25% chance og, 75% chance other
       g.sortedToys = new Array(12).fill('').map(() => {
-        if (seededRand() < 0.7 && ogKeys.length) {
+        if (seededRand() < 0.25 && ogKeys.length) {
           const idx = Math.floor(seededRand() * ogKeys.length)
           return ogKeys[idx]
         }
@@ -437,6 +438,54 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
       console.error('Error fetching toys:', err)
     }
   }
+
+  // ---- Re-distribute toys when seed changes ----
+
+  useEffect(() => {
+    const g = gameRef.current
+    if (!g.initialized || !g.toys) return
+
+    // Re-run distribution with new seed
+    const ogKeys = Object.keys(g.toys).filter((k) => g.toys[k].group === 'og')
+    const otherKeys = Object.keys(g.toys).filter((k) => g.toys[k].group !== 'og')
+
+    let seededRand = Math.random
+    if (seed) {
+      let state = 0
+      for (let i = 0; i < seed.length; i++) {
+        state = ((state << 5) - state) + seed.charCodeAt(i)
+        state = state & state
+      }
+      state = Math.abs(state)
+      seededRand = () => {
+        state = (state * 1664525 + 1013904223) | 0
+        return Math.abs(state) / 0x100000000
+      }
+    }
+
+    // 25% chance og, 75% chance other
+    g.sortedToys = new Array(12).fill('').map(() => {
+      if (seededRand() < 0.25 && ogKeys.length) {
+        const idx = Math.floor(seededRand() * ogKeys.length)
+        return ogKeys[idx]
+      }
+      const idx = Math.floor(seededRand() * otherKeys.length)
+      return otherKeys[idx]
+    })
+
+    // Remove old toy elements
+    g.toyEls.forEach((toy) => toy.el.remove())
+    g.toyEls = []
+    g.collectedNumber = 0
+    g.targetToy = null
+
+    // Recreate toys
+    new Array(12).fill('').forEach((_, i) => {
+      if (i === 8) return
+      createToy(i)
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seed])
 
   // ---- Init when active (visible) ----
 
