@@ -1,3 +1,5 @@
+import type { EnergyTag } from '../utils/energyTag'
+
 export interface BigTask {
   id: string
   userId: string
@@ -7,6 +9,7 @@ export interface BigTask {
   createdAt: string
   completedAt: string | null
   subTasks: SubTask[]
+  energyTag: EnergyTag
 }
 
 export interface SubTask {

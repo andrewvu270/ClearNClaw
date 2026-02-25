@@ -1,6 +1,10 @@
+import type { EnergyTag } from '../utils/energyTag'
+import { parseEnergyTag } from '../utils/energyTag'
+
 export interface AgentResponse {
   emoji: string
   subTasks: { name: string; emoji: string }[]
+  energyTag: EnergyTag
 }
 
 const AGENT_TIMEOUT_MS = 10_000
@@ -67,7 +71,10 @@ export async function breakDownTask(description: string): Promise<AgentResponse>
       return { name: st.name, emoji: st.emoji || '▪️' }
     })
 
-    return { emoji: parsed.emoji, subTasks }
+    // Parse energy tag from agent response, default to "medium" if missing
+    const energyTag = parseEnergyTag(parsed.energyTag ?? parsed.energy_tag)
+
+    return { emoji: parsed.emoji, subTasks, energyTag }
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') {
       throw new Error('Agent request timed out. Please try again.')

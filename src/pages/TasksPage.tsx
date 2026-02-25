@@ -13,6 +13,7 @@ import { breakDownTask } from '../services/agentService'
 import * as taskService from '../services/taskService'
 import { getActiveTasks, getDoneTasks } from '../utils/filters'
 import { calculateProgress } from '../utils/progress'
+import { energyTagToCoins } from '../utils/energyTag'
 import type { BigTask } from '../types'
 
 type Tab = 'active' | 'done'
@@ -82,8 +83,8 @@ export function TasksPage() {
     if (!userId) return
     setLoading(true)
     try {
-      const { emoji, subTasks } = await breakDownTask(description)
-      await taskService.createBigTask(userId, description, emoji, subTasks)
+      const { emoji, subTasks, energyTag } = await breakDownTask(description)
+      await taskService.createBigTask(userId, description, emoji, subTasks, energyTag)
       await fetchTasks()
     } catch {
       // Agent timeout or error
@@ -247,7 +248,7 @@ export function TasksPage() {
                         {!task.completed && (
                           <div className="absolute top-3 left-3 flex items-center gap-1 opacity-60">
                             <span className="text-sm">🪙</span>
-                            <span className="text-neon-yellow font-pixel text-[9px]">+1</span>
+                            <span className="text-neon-yellow font-pixel text-[9px]">+{energyTagToCoins(task.energyTag)}</span>
                           </div>
                         )}
                         <div className="flex flex-col items-center">
@@ -313,7 +314,7 @@ export function TasksPage() {
             >
               <p className="text-4xl mb-3">🎉</p>
               <p className="text-white font-body text-sm mb-1">All sub-tasks done!</p>
-              <p className="text-gray-400 text-xs mb-6">Complete this task and earn 1 coin?</p>
+              <p className="text-gray-400 text-xs mb-6">Complete this task and earn {focusedTask ? energyTagToCoins(focusedTask.energyTag) : 1} coin{focusedTask && energyTagToCoins(focusedTask.energyTag) > 1 ? 's' : ''}?</p>
               <div className="flex gap-3">
                 <button
                   onClick={cancelComplete}

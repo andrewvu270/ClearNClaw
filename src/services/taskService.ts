@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase'
 import type { BigTask, SubTask } from '../types'
+import type { EnergyTag } from '../utils/energyTag'
+import { parseEnergyTag } from '../utils/energyTag'
 
 function mapBigTask(row: Record<string, unknown>, subTasks: SubTask[] = []): BigTask {
   return {
@@ -11,6 +13,7 @@ function mapBigTask(row: Record<string, unknown>, subTasks: SubTask[] = []): Big
     createdAt: row.created_at as string,
     completedAt: (row.completed_at as string) ?? null,
     subTasks,
+    energyTag: parseEnergyTag(row.energy_tag as string | null),
   }
 }
 
@@ -29,11 +32,12 @@ export async function createBigTask(
   userId: string,
   description: string,
   emoji: string,
-  subTaskItems: { name: string; emoji: string }[]
+  subTaskItems: { name: string; emoji: string }[],
+  energyTag: EnergyTag = 'medium'
 ): Promise<BigTask> {
   const { data: taskRow, error: taskError } = await supabase
     .from('big_tasks')
-    .insert({ user_id: userId, name: description, emoji })
+    .insert({ user_id: userId, name: description, emoji, energy_tag: energyTag })
     .select()
     .single()
 
@@ -87,6 +91,15 @@ export async function updateBigTaskEmoji(taskId: string, emoji: string): Promise
   const { error } = await supabase
     .from('big_tasks')
     .update({ emoji })
+    .eq('id', taskId)
+
+  if (error) throw error
+}
+
+export async function updateBigTaskEnergyTag(taskId: string, energyTag: EnergyTag): Promise<void> {
+  const { error } = await supabase
+    .from('big_tasks')
+    .update({ energy_tag: energyTag })
     .eq('id', taskId)
 
   if (error) throw error
