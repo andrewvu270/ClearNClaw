@@ -5,7 +5,7 @@ interface SubTaskItemProps {
   subTask: SubTask
   onToggle: (subTaskId: string, completed: boolean) => void
   onEditName: (subTaskId: string, name: string) => void
-  onEditEmoji: (subTaskId: string, emoji: string) => void
+  onEditEmoji?: (subTaskId: string, emoji: string) => void
   onDelete: (subTaskId: string) => void
   readOnly?: boolean
 }
@@ -31,7 +31,7 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
 
   const handleEmojiSave = () => {
     const trimmed = emojiValue.trim()
-    if (trimmed && trimmed !== subTask.emoji) {
+    if (trimmed && trimmed !== subTask.emoji && onEditEmoji) {
       onEditEmoji(subTask.id, trimmed)
     } else {
       setEmojiValue(subTask.emoji)
@@ -40,7 +40,7 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
   }
 
   const handleEmojiClick = () => {
-    if (readOnly) return
+    if (readOnly || !onEditEmoji) return
     setEditingEmoji(true)
     setTimeout(() => emojiInputRef.current?.focus(), 0)
   }
