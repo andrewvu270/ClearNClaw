@@ -657,7 +657,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
             <div className="collection-arrow pix" ref={collectionArrowRef}></div>
           </div>
           <div className="loot-tag">"LoOT"</div>
-          <div className="loot-arrow">{'\u2B07'}</div>
+          <div className="loot-arrow">{'\u2193'}</div>
           <div className="collection-point pix"></div>
         </div>
       </div>

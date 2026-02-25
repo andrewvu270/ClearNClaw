@@ -4,12 +4,14 @@ interface SpotlightCardProps {
   children: React.ReactNode
   className?: string
   spotlightColor?: string
+  onClick?: () => void
 }
 
 export function SpotlightCard({
   children,
   className = '',
   spotlightColor = 'rgba(0, 229, 255, 0.15)',
+  onClick,
 }: SpotlightCardProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const [isFocused, setIsFocused] = useState(false)
@@ -25,6 +27,10 @@ export function SpotlightCard({
   return (
     <div
       ref={divRef}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onClick={onClick}
+      onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick() } } : undefined}
       onMouseMove={handleMouseMove}
       onFocus={() => { setIsFocused(true); setOpacity(0.6) }}
       onBlur={() => { setIsFocused(false); setOpacity(0) }}

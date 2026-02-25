@@ -25,6 +25,10 @@ export function TasksPage() {
   const [focusedTask, setFocusedTask] = useState<BigTask | null>(null)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) setUserId(session.user.id)
     })
@@ -196,6 +200,7 @@ export function TasksPage() {
                       <SpotlightCard
                         className={`py-8 px-6 cursor-pointer relative group ${gradientBg}`}
                         spotlightColor="rgba(0, 229, 255, 0.12)"
+                        onClick={() => setFocusedTask(task)}
                       >
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
@@ -211,13 +216,7 @@ export function TasksPage() {
                             <span className="text-neon-yellow font-pixel text-[9px]">+1</span>
                           </div>
                         )}
-                        <div
-                          role="button"
-                          tabIndex={0}
-                          onClick={() => setFocusedTask(task)}
-                          onKeyDown={e => { if (e.key === 'Enter') setFocusedTask(task) }}
-                          className="flex flex-col items-center"
-                        >
+                        <div className="flex flex-col items-center">
                           <p className="text-white font-body text-lg mb-1">{task.name}</p>
                           <p className="text-gray-500 text-xs mb-6">{doneCount}/{task.subTasks.length} done</p>
                           <CircularProgressEmoji emoji={task.emoji} progress={progress} size={150} />

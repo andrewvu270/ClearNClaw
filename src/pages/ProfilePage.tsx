@@ -41,6 +41,10 @@ export function ProfilePage() {
   }, [selectedToy])
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [])
+
+  useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
       const uid = session.user.id
