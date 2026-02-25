@@ -139,7 +139,12 @@
     - Verify demo task has correct name, 4 sub-tasks, and "low" energy tag
     - _Requirements: 3.1, 3.2, 3.3_
 
-- [ ] 5. Checkpoint — Make sure all tests are passing
+- [x] 5. Checkpoint — Make sure all tests are passing
+
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 6. Focus Timer and Pomodoro Mode
