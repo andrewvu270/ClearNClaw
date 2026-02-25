@@ -90,8 +90,8 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
 
   return (
     <div className="h-screen bg-base-900 flex flex-col pb-20 relative">
-      <div className="absolute inset-0 pointer-events-none opacity-30">
-        <DotGrid dotSize={6} gap={20} baseColor="#1a3a4a" activeColor="#22d3ee" proximity={100} shockRadius={200} shockStrength={3} returnDuration={1.2} />
+      <div className="absolute inset-0 pointer-events-none">
+        <DotGrid dotSize={6} gap={20} baseColor="#271E37" activeColor="#5227FF" proximity={150} shockRadius={250} shockStrength={4} returnDuration={1.0} />
       </div>
       <div className="max-w-lg mx-auto px-4 pt-2 shrink-0 relative z-10">
         <h1 className="text-neon-cyan text-xs text-center mb-1 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
