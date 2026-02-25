@@ -97,6 +97,11 @@ export function TasksPage() {
     await fetchTasks()
   }
 
+  const handleEditSubTaskEmoji = async (subTaskId: string, emoji: string) => {
+    await taskService.updateSubTaskEmoji(subTaskId, emoji)
+    await fetchTasks()
+  }
+
   const handleDeleteSubTask = async (subTaskId: string) => {
     await taskService.deleteSubTask(subTaskId)
     await fetchTasks()
@@ -109,6 +114,11 @@ export function TasksPage() {
 
   const handleEditName = async (taskId: string, name: string) => {
     await taskService.updateBigTaskName(taskId, name)
+    await fetchTasks()
+  }
+
+  const handleEditEmoji = async (taskId: string, emoji: string) => {
+    await taskService.updateBigTaskEmoji(taskId, emoji)
     await fetchTasks()
   }
 
@@ -229,8 +239,10 @@ export function TasksPage() {
             readOnly={focusedTask.completed}
             onClose={() => setFocusedTask(null)}
             onEditName={handleEditName}
+            onEditEmoji={handleEditEmoji}
             onToggleSubTask={handleToggleSubTask}
             onEditSubTaskName={handleEditSubTaskName}
+            onEditSubTaskEmoji={handleEditSubTaskEmoji}
             onDeleteSubTask={handleDeleteSubTask}
             onAddSubTask={handleAddSubTask}
           />
@@ -287,8 +299,10 @@ function FocusView({
   readOnly,
   onClose,
   onEditName,
+  onEditEmoji,
   onToggleSubTask,
   onEditSubTaskName,
+  onEditSubTaskEmoji,
   onDeleteSubTask,
   onAddSubTask,
 }: {
@@ -296,8 +310,10 @@ function FocusView({
   readOnly?: boolean
   onClose: () => void
   onEditName: (id: string, name: string) => void
+  onEditEmoji: (id: string, emoji: string) => void
   onToggleSubTask: (id: string, completed: boolean) => void
   onEditSubTaskName: (id: string, name: string) => void
+  onEditSubTaskEmoji: (id: string, emoji: string) => void
   onDeleteSubTask: (id: string) => void
   onAddSubTask: (bigTaskId: string, name: string) => void
 }) {
@@ -317,21 +333,17 @@ function FocusView({
         <Aurora amplitude={0.8} speed={0.4} blend={0.6} />
       </div>
 
-      {/* Top bar */}
-      <div className="relative z-10 flex items-center justify-between px-4 pt-6 pb-2">
-        <button
-          onClick={onClose}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-          aria-label="Back"
-        >
-          ←
-        </button>
-        <div className="min-w-[44px]" />
-      </div>
-
-      {/* Scrollable content */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24">
+      {/* Scrollable content — back button scrolls with content */}
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24 pt-6">
         <div className="max-w-lg mx-auto">
+          <button
+            onClick={onClose}
+            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors mb-2"
+            aria-label="Back"
+          >
+            ←
+          </button>
+
           {/* Editable name */}
           <div className="text-center mb-2">
             {readOnly ? (
@@ -350,7 +362,15 @@ function FocusView({
 
           {/* Big emoji + progress ring */}
           <div className="flex justify-center mb-8">
-            <CircularProgressEmoji emoji={task.emoji} progress={progress} size={225} />
+            {readOnly ? (
+              <CircularProgressEmoji emoji={task.emoji} progress={progress} size={225} />
+            ) : (
+              <EditableBigEmoji
+                emoji={task.emoji}
+                progress={progress}
+                onSave={(emoji) => onEditEmoji(task.id, emoji)}
+              />
+            )}
           </div>
 
           {/* Sub-tasks */}
@@ -361,6 +381,7 @@ function FocusView({
                 subTask={st}
                 onToggle={onToggleSubTask}
                 onEditName={onEditSubTaskName}
+                onEditEmoji={onEditSubTaskEmoji}
                 onDelete={onDeleteSubTask}
                 readOnly={readOnly}
               />
@@ -388,8 +409,8 @@ function AddSubTaskInput({ onAdd }: { onAdd: (name: string) => void }) {
   }
 
   return (
-    <div className="flex items-center gap-2 mt-4">
-      <div className="min-w-[44px]" />
+    <div className="flex items-center gap-3 mt-4">
+      <div className="w-10 shrink-0" />
       <div className="flex-1 min-w-0">
         <input
           value={value}
@@ -399,14 +420,53 @@ function AddSubTaskInput({ onAdd }: { onAdd: (name: string) => void }) {
           className="w-full bg-transparent text-white text-sm px-0 py-2 border-b border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
         />
       </div>
+      <div className="w-10 shrink-0" />
       <button
         onClick={handleAdd}
-        className="text-gray-500 hover:text-neon-cyan transition-colors text-lg leading-none min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="w-8 h-10 flex items-center justify-center text-gray-500 hover:text-neon-cyan transition-colors text-lg leading-none shrink-0"
         aria-label="Add sub-task"
       >
         +
       </button>
     </div>
+  )
+}
+
+// ── Editable big task emoji ──
+function EditableBigEmoji({ emoji, progress, onSave }: { emoji: string; progress: number; onSave: (emoji: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(emoji)
+
+  useEffect(() => { setValue(emoji) }, [emoji])
+
+  const handleSave = () => {
+    const trimmed = value.trim()
+    if (trimmed && trimmed !== emoji) onSave(trimmed)
+    else setValue(emoji)
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <div className="flex flex-col items-center gap-3">
+        <CircularProgressEmoji emoji={value || emoji} progress={progress} size={225} />
+        <input
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') { setValue(emoji); setEditing(false) } }}
+          className="w-20 text-center text-2xl bg-base-800 rounded-xl border border-neon-cyan/30 outline-none focus:border-neon-cyan py-1"
+          maxLength={4}
+          autoFocus
+        />
+      </div>
+    )
+  }
+
+  return (
+    <button onClick={() => setEditing(true)} className="active:scale-95 transition-transform">
+      <CircularProgressEmoji emoji={emoji} progress={progress} size={225} />
+    </button>
   )
 }
 
