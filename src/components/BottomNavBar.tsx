@@ -64,16 +64,7 @@ export function BottomNavBar() {
                   />
                 </>
               )}
-              {/* Active indicator dot with glow */}
-              {isActive && (
-                <span
-                  className="absolute -top-[3px] left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full"
-                  style={{
-                    background: 'linear-gradient(135deg, #00e5ff, #ff6b9d)',
-                    boxShadow: '0 0 8px 3px rgba(0, 229, 255, 0.5), 0 0 16px 4px rgba(255, 107, 157, 0.2)',
-                  }}
-                />
-              )}
+
               <span
                 className={`relative text-xl transition-transform duration-300 ${isActive ? 'scale-125' : 'scale-100 opacity-60'}`}
                 role="img"

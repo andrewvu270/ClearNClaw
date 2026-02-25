@@ -239,14 +239,14 @@ export function TasksPage() {
                       >
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
-                          className="absolute top-3 right-3 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-600 hover:text-neon-pink transition-colors"
+                          className="absolute top-1 right-2 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-600 hover:text-neon-pink transition-colors"
                           aria-label="Delete task"
                         >
                           ×
                         </button>
                         {/* Coin reward preview on active cards */}
                         {!task.completed && (
-                          <div className="absolute top-3 left-3 flex items-center gap-1 opacity-60">
+                          <div className="absolute top-1 left-3 h-[36px] flex items-center gap-1 opacity-60">
                             <span className="text-sm">🪙</span>
                             <span className="text-neon-yellow font-pixel text-[9px]">+{energyTagToCoins(task.energyTag)}</span>
                           </div>
