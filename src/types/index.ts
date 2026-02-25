@@ -13,6 +13,7 @@ export interface SubTask {
   id: string
   bigTaskId: string
   name: string
+  emoji: string
   completed: boolean
   sortOrder: number
 }
