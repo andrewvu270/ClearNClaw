@@ -114,29 +114,6 @@ export function ProfilePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-        {/* Low Stim Mode Toggle */}
-        <div className="mb-6 p-4 bg-base-800 rounded-xl border border-base-700">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-white text-sm font-body mb-1">Low Stimulation Mode</p>
-              <p className="text-gray-400 text-xs font-body">Reduces animations and calms colors</p>
-            </div>
-            <button
-              onClick={toggle}
-              className={`relative w-14 h-8 rounded-full transition-colors ${
-                isLowStim ? 'bg-neon-cyan' : 'bg-base-700'
-              }`}
-              aria-label="Toggle Low Stimulation Mode"
-            >
-              <span
-                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
-                  isLowStim ? 'translate-x-6' : 'translate-x-0'
-                }`}
-              />
-            </button>
-          </div>
-        </div>
-
         <div className="flex items-center justify-center gap-8 mb-6">
           <div className="p-4 text-center">
             <p className="text-3xl mb-1">✅</p>
@@ -152,6 +129,17 @@ export function ProfilePage() {
             </p>
             <p className="text-gray-400 text-xs font-body mt-1">Coins</p>
           </div>
+          <button
+            onClick={toggle}
+            className="p-4 text-center hover:bg-base-800 rounded-xl transition-colors"
+            aria-label="Toggle Low Stimulation Mode"
+          >
+            <p className="text-3xl mb-1">🎚️</p>
+            <p className={`font-pixel text-sm ${isLowStim ? 'text-neon-cyan' : 'text-gray-500'}`}>
+              {isLowStim ? 'ON' : 'OFF'}
+            </p>
+            <p className="text-gray-400 text-xs font-body mt-1">Low Stim</p>
+          </button>
           <button
             onClick={handleLogout}
             className="p-4 text-center hover:bg-base-800 rounded-xl transition-colors"
