@@ -25,6 +25,21 @@ function AuthListener() {
     return () => subscription.unsubscribe()
   }, [navigate])
 
+  // When PWA regains focus, re-check session (handles magic link opened in Safari)
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session) {
+            navigate('/tasks', { replace: true })
+          }
+        })
+      }
+    }
+    document.addEventListener('visibilitychange', handleVisibility)
+    return () => document.removeEventListener('visibilitychange', handleVisibility)
+  }, [navigate])
+
   return null
 }
 
