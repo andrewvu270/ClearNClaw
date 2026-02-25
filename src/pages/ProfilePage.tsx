@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
 import { EmptyState } from '../components/EmptyState'
 import DotGrid from '../components/DotGrid'
 import ElectricBorder from '../components/ElectricBorder'
+import TiltedCard from '../components/TiltedCard'
 import { getProfile, getToyCollection } from '../services/profileService'
 // @ts-expect-error — toyCache is a JS module
 import { getCachedToys } from '../utils/toyCache'
@@ -28,6 +30,7 @@ export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [toys, setToys] = useState<UserToy[]>([])
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
+  const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string } | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -136,6 +139,7 @@ export function ProfilePage() {
                 const info = toyData[ut.toyId]
                 const isMax = maxCount > 0 && ut.count === maxCount
                 const isRare = rareSet.has(ut.toyId)
+                const handleTap = () => setSelectedToy({ name: ut.toyId, count: ut.count, sprite: info?.sCollected || info?.sNormal })
                 const card = (
                   <ToyCard
                     key={ut.toyId}
@@ -144,6 +148,7 @@ export function ProfilePage() {
                     owned
                     count={ut.count}
                     electric={isMax && !isRare}
+                    onTap={handleTap}
                   />
                 )
                 if (isRare) {
@@ -173,6 +178,7 @@ export function ProfilePage() {
                       const owned = count > 0
                       const isRare = owned && rareSet.has(name)
                       const isMax = owned && maxCount > 0 && count === maxCount
+                      const handleTap = () => owned && setSelectedToy({ name, count, sprite: info?.sCollected || info?.sNormal })
 
                       const card = (
                         <ToyCard
@@ -182,6 +188,7 @@ export function ProfilePage() {
                           owned={owned}
                           count={count}
                           electric={isMax && !isRare}
+                          onTap={handleTap}
                         />
                       )
 
@@ -202,6 +209,51 @@ export function ProfilePage() {
         )}
       </div>
 
+      {/* Toy detail popup */}
+      <AnimatePresence>
+        {selectedToy && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+            onClick={() => setSelectedToy(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+                <div className="bg-base-800 border border-base-700 rounded-2xl p-8 max-w-sm w-full text-center" style={{ transformStyle: 'preserve-3d' }}>
+                  {selectedToy.sprite ? (
+                    <img
+                      src={selectedToy.sprite}
+                      alt={selectedToy.name}
+                      className="w-40 h-40 object-contain mx-auto mb-5"
+                      style={{ transform: 'translateZ(40px)' }}
+                    />
+                  ) : (
+                    <div className="w-40 h-40 bg-base-700 rounded-xl mx-auto mb-5 flex items-center justify-center text-6xl" style={{ transform: 'translateZ(40px)' }}>🧸</div>
+                  )}
+                  <p className="text-white font-body text-base mb-1" style={{ transform: 'translateZ(25px)' }}>{selectedToy.name}</p>
+                  <p className="text-neon-cyan font-pixel text-sm" style={{ transform: 'translateZ(25px)' }}>×{selectedToy.count} collected</p>
+                  <button
+                    onClick={() => setSelectedToy(null)}
+                    className="mt-5 min-h-[44px] px-6 text-sm text-gray-400 border border-base-700 rounded-xl hover:bg-base-700 transition-colors"
+                    style={{ transform: 'translateZ(20px)' }}
+                  >
+                    close
+                  </button>
+                </div>
+              </TiltedCard>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <BottomNavBar />
     </div>
   )
@@ -213,16 +265,24 @@ function ToyCard({
   owned,
   count,
   electric,
+  onTap,
 }: {
   name: string
   sprite?: string
   owned: boolean
   count: number
   electric: boolean
+  onTap?: () => void
 }) {
   return (
     <div
+      role={owned ? 'button' : undefined}
+      tabIndex={owned ? 0 : undefined}
+      onClick={() => owned && onTap?.()}
+      onKeyDown={e => { if (owned && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onTap?.() } }}
       className={`relative rounded-xl p-3 flex flex-col items-center text-center transition-all ${
+        owned ? 'cursor-pointer active:scale-95' : ''
+      } ${
         electric
           ? 'bg-base-800 electric-border'
           : owned
