@@ -30,7 +30,57 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Hide scrollbar everywhere */
+*::-webkit-scrollbar {
+  display: none;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Ensure emojis render at minimum 32px */
 .emoji-min {
   font-size: max(1em, 32px);
+}
+
+/* Electric border animation for top collected toys */
+.electric-border {
+  position: relative;
+  border: none;
+  border-radius: 0.75rem; /* match rounded-xl */
+}
+
+.electric-border::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 0.75rem;
+  padding: 2px;
+  background: conic-gradient(
+    from var(--electric-angle, 0deg),
+    #22d3ee,
+    #7c3aed,
+    #ec4899,
+    #22d3ee
+  );
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: 
+    linear-gradient(#fff 0 0) content-box, 
+    linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: electric-spin 2s linear infinite;
+}
+
+@keyframes electric-spin {
+  to { --electric-angle: 360deg; }
+}
+
+@property --electric-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
 }

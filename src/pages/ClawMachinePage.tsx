@@ -1,77 +1,128 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
 import * as coinService from '../services/coinService'
 // @ts-expect-error — ClawMachine is a JSX component without types
 import ClawMachine from '../components/ClawMachine'
 
-export function ClawMachinePage() {
+export function ClawMachinePage({ active = true }: { active?: boolean }) {
   const [coins, setCoins] = useState<number | null>(null)
   const [playing, setPlaying] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
+  const [resetCount, setResetCount] = useState(0)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUserId(session.user.id)
         coinService.getCoinBalance(session.user.id).then(setCoins)
+        // Fetch reset count
+        supabase
+          .from('profiles')
+          .select('claw_reset_count')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            if (data) setResetCount(data.claw_reset_count || 0)
+          })
       }
     })
   }, [])
 
-  const handlePlay = async () => {
-    if (!userId || coins === null || coins <= 0) {
-      setMessage('No coins! Complete tasks to earn more.')
-      return
+  // Refresh coin balance whenever the page becomes visible
+  useEffect(() => {
+    if (active && userId) {
+      coinService.getCoinBalance(userId).then(setCoins)
     }
+  }, [active, userId])
 
+  // Generate seed from userId + date + resetCount
+  const seed = useMemo(() => {
+    if (!userId) return undefined
+    const today = new Date().toISOString().split('T')[0]
+    return `${userId}-${today}-${resetCount}`
+  }, [userId, resetCount])
+
+  const handlePlay = async () => {
+    if (!userId || coins === null || coins <= 0 || playing) return
     const success = await coinService.spendCoin(userId)
     if (!success) {
       setMessage('No coins! Complete tasks to earn more.')
       return
     }
-
     setCoins(prev => (prev !== null ? prev - 1 : 0))
     setMessage('')
     setPlaying(true)
   }
 
+  const handleRefreshToys = async () => {
+    if (!userId || coins === null || coins < 5 || playing) return
+    
+    // Spend 5 coins and increment reset count
+    const { error } = await supabase.rpc('refresh_claw_toys', { p_user_id: userId })
+    
+    if (error) {
+      setMessage('Failed to refresh toys')
+      return
+    }
+    
+    setCoins(prev => (prev !== null ? prev - 5 : 0))
+    setResetCount(prev => prev + 1)
+    setMessage('Toys refreshed!')
+    setTimeout(() => setMessage(''), 2000)
+  }
+
+  const handleTurnEnd = () => {
+    setPlaying(false)
+  }
+
+  const canPlay = !playing && coins !== null && coins > 0
+  const canRefresh = !playing && coins !== null && coins >= 5
+
   return (
-    <div className="min-h-screen bg-base-900 pb-20">
-      <div className="max-w-lg mx-auto px-4 pt-6">
-        <h1 className="text-neon-cyan text-xs text-center mb-4">Claw Machine</h1>
+    <div className="h-screen bg-base-900 flex flex-col pb-20">
+      <div className="max-w-lg mx-auto px-4 pt-4 shrink-0 relative z-10">
+        <h1 className="text-neon-cyan text-xs text-center mb-3 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
 
-        {/* Coin balance */}
-        <div className="flex items-center justify-center gap-2 mb-4">
-          <span className="text-2xl">🪙</span>
-          <span className="font-pixel text-neon-yellow text-sm">
-            {coins !== null ? coins : '...'}
-          </span>
+        <div className="flex items-center justify-center gap-3 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">🪙</span>
+            <span className="font-pixel text-neon-yellow text-sm">
+              {coins !== null ? coins : '...'}
+            </span>
+          </div>
+          <button
+            onClick={handlePlay}
+            disabled={!canPlay}
+            className={`min-h-[44px] px-4 py-2 font-pixel text-xs rounded-xl border transition-colors ${
+              canPlay
+                ? 'bg-neon-pink/20 border-neon-pink/30 text-neon-pink hover:bg-neon-pink/30'
+                : 'bg-base-800 border-base-700 text-gray-500 cursor-not-allowed'
+            }`}
+          >
+            {playing ? 'Playing...' : coins && coins > 0 ? 'Play 1' : 'No Coins'}
+          </button>
+          <button
+            onClick={handleRefreshToys}
+            disabled={!canRefresh}
+            className={`min-h-[44px] px-3 py-2 font-pixel text-xs rounded-xl border transition-colors ${
+              canRefresh
+                ? 'bg-neon-cyan/20 border-neon-cyan/30 text-neon-cyan hover:bg-neon-cyan/30'
+                : 'bg-base-800 border-base-700 text-gray-500 cursor-not-allowed'
+            }`}
+            title="Refresh toys for 5 coins"
+          >
+            Reset 5
+          </button>
         </div>
-
-        {!playing ? (
-          <div className="text-center">
-            <button
-              onClick={handlePlay}
-              disabled={coins === 0}
-              className={`min-h-[44px] px-8 py-3 font-pixel text-sm rounded-xl border transition-colors ${
-                coins && coins > 0
-                  ? 'bg-neon-pink/20 border-neon-pink/30 text-neon-pink hover:bg-neon-pink/30'
-                  : 'bg-base-800 border-base-700 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {coins && coins > 0 ? 'Play (1 Coin)' : 'No Coins'}
-            </button>
-            {message && (
-              <p className="text-neon-yellow text-xs mt-3 font-body">{message}</p>
-            )}
-          </div>
-        ) : (
-          <div className="mt-4">
-            <ClawMachine />
-          </div>
+        {message && (
+          <p className="text-neon-yellow text-xs text-center mb-1 font-body">{message}</p>
         )}
+      </div>
+
+      <div className="flex-1 min-h-0 max-w-lg mx-auto w-full flex items-center justify-center">
+        <ClawMachine playable={playing} onTurnEnd={handleTurnEnd} userId={userId} active={active} seed={seed} />
       </div>
 
       <BottomNavBar />

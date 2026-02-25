@@ -11,7 +11,7 @@ export function CircularProgressEmoji({ emoji, progress, size = 64 }: CircularPr
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
   const offset = circumference * (1 - Math.min(Math.max(progress, 0), 1))
-  const emojiSize = Math.max(size * 0.5, 32)
+  const emojiSize = Math.max(size * 0.55, 32)
 
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
@@ -43,7 +43,7 @@ export function CircularProgressEmoji({ emoji, progress, size = 64 }: CircularPr
         <defs>
           <linearGradient id="progressGradient" x1="0%" y1="0%" x2="100%" y2="0%">
             <stop offset="0%" stopColor="#00e5ff" />
-            <stop offset="100%" stopColor="#39ff14" />
+            <stop offset="100%" stopColor="#7c3aed" />
           </linearGradient>
         </defs>
       </svg>

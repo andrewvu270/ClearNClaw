@@ -35,17 +35,18 @@ export function TasksPage() {
       taskService.getBigTasks(userId, false),
       taskService.getBigTasks(userId, true),
     ])
-    const all = [...active, ...done]
-    setTasks(all)
-    // Update focused task if it's still around
-    if (focusedTask) {
-      const updated = all.find(t => t.id === focusedTask.id)
-      if (updated) setFocusedTask(updated)
-      else setFocusedTask(null)
-    }
-  }, [userId, focusedTask?.id])
+    setTasks([...active, ...done])
+  }, [userId])
 
-  useEffect(() => { fetchTasks() }, [userId])
+  useEffect(() => { fetchTasks() }, [userId, fetchTasks])
+
+  // Keep focusedTask in sync with latest task data
+  useEffect(() => {
+    if (!focusedTask) return
+    const updated = tasks.find(t => t.id === focusedTask.id)
+    if (updated) setFocusedTask(updated)
+    else setFocusedTask(null) // task was deleted
+  }, [tasks]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSubmit = async (description: string) => {
     if (!userId) return
@@ -61,10 +62,33 @@ export function TasksPage() {
     }
   }
 
+  const [pendingComplete, setPendingComplete] = useState<string | null>(null)
+
   const handleToggleSubTask = async (subTaskId: string, completed: boolean) => {
     if (!userId) return
+
+    // If checking the last incomplete subtask, show custom confirm
+    if (completed && focusedTask) {
+      const remaining = focusedTask.subTasks.filter(st => !st.completed && st.id !== subTaskId)
+      if (remaining.length === 0) {
+        setPendingComplete(subTaskId)
+        return
+      }
+    }
+
     await taskService.toggleSubTask(subTaskId, completed, userId)
     await fetchTasks()
+  }
+
+  const confirmComplete = async () => {
+    if (!pendingComplete || !userId) return
+    await taskService.toggleSubTask(pendingComplete, true, userId)
+    setPendingComplete(null)
+    await fetchTasks()
+  }
+
+  const cancelComplete = () => {
+    setPendingComplete(null)
   }
 
   const handleEditSubTaskName = async (subTaskId: string, name: string) => {
@@ -95,154 +119,143 @@ export function TasksPage() {
 
   const displayed = tab === 'active' ? getActiveTasks(tasks) : getDoneTasks(tasks)
 
-  // ── Focus View (full screen single task) ──
-  if (focusedTask) {
-    const progress = calculateProgress(focusedTask.subTasks)
-    const doneCount = focusedTask.subTasks.filter(st => st.completed).length
-
-    return (
-      <div className="min-h-screen bg-base-900 relative overflow-hidden">
-        {/* Aurora background */}
-        <div className="absolute inset-0 opacity-30 pointer-events-none">
-          <Aurora
-            colorStops={['#00e5ff', '#39ff14', '#ff1493']}
-            amplitude={1.2}
-            blend={0.6}
-            speed={0.8}
-          />
-        </div>
-
-        <div className="relative z-10 max-w-lg mx-auto px-4 pt-6 pb-24 min-h-screen flex flex-col">
-          {/* Top bar */}
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={() => setFocusedTask(null)}
-              className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors"
-              aria-label="Back to task list"
-            >
-              ← Back
-            </button>
-            <div className="flex gap-1">
-              <button
-                onClick={() => {
-                  const name = prompt('Edit task name:', focusedTask.name)
-                  if (name?.trim()) handleEditName(focusedTask.id, name.trim())
-                }}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-neon-cyan transition-colors text-sm"
-                aria-label="Edit task name"
-              >
-                ✏️
-              </button>
-              <button
-                onClick={() => handleDelete(focusedTask.id)}
-                className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 hover:text-neon-pink transition-colors text-sm"
-                aria-label="Delete task"
-              >
-                🗑️
-              </button>
-            </div>
-          </div>
-
-          {/* Task name */}
-          <h2 className="text-white font-body text-lg text-center mb-2">
-            {focusedTask.name}
-          </h2>
-          <p className="text-gray-500 text-xs text-center mb-6">
-            {doneCount}/{focusedTask.subTasks.length} done
-          </p>
-
-          {/* Big emoji + progress */}
-          <div className="flex justify-center mb-8">
-            <SpotlightCard className="p-6 inline-flex" spotlightColor="rgba(0, 229, 255, 0.12)">
-              <CircularProgressEmoji
-                emoji={focusedTask.emoji}
-                progress={progress}
-                size={160}
-              />
-            </SpotlightCard>
-          </div>
-
-          {/* Sub-tasks */}
-          <div className="flex-1 space-y-1">
-            {focusedTask.subTasks.map(st => (
-              <SubTaskItem
-                key={st.id}
-                subTask={st}
-                onToggle={handleToggleSubTask}
-                onEditName={handleEditSubTaskName}
-                onDelete={handleDeleteSubTask}
-              />
-            ))}
-          </div>
-
-          {/* Add sub-task */}
-          <AddSubTaskInput onAdd={(name) => handleAddSubTask(focusedTask.id, name)} />
-        </div>
-
-        <BottomNavBar />
-      </div>
-    )
-  }
-
-  // ── List View ──
   return (
-    <div className="min-h-screen bg-base-900 pb-20">
-      <div className="max-w-lg mx-auto px-4 pt-6">
-        <h1 className="text-neon-cyan text-xs text-center mb-6 font-pixel">ADHD Task Breaker</h1>
-
+    <div className="h-screen bg-base-900 flex flex-col">
+      {/* Fixed header */}
+      <div className="shrink-0 max-w-lg mx-auto w-full px-4 pt-6">
+        <h1 className="text-neon-cyan text-xs text-center mb-6 font-pixel opacity-0 pointer-events-none">Clear</h1>
         <TaskInputForm onSubmit={handleSubmit} loading={loading} />
-
-        {/* Tabs */}
-        <div className="flex gap-2 mt-6 mb-4">
+        <div className="relative flex gap-8 mt-6 mb-2 justify-center">
           {(['active', 'done'] as Tab[]).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
-              className={`flex-1 min-h-[44px] font-pixel text-xs rounded-xl border transition-colors ${
-                tab === t
-                  ? 'bg-neon-cyan/20 border-neon-cyan/30 text-neon-cyan'
-                  : 'bg-base-800 border-base-700 text-gray-400 hover:text-gray-200'
+              className={`relative min-h-[44px] text-sm transition-colors ${
+                tab === t ? 'text-neon-cyan' : 'text-gray-500 hover:text-gray-300'
               }`}
             >
               {t === 'active' ? 'Active' : 'Done'}
+              {tab === t && (
+                <motion.div
+                  layoutId="tab-underline"
+                  className="absolute -bottom-1 left-0 right-0 h-0.5 bg-neon-cyan rounded-full"
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                />
+              )}
             </button>
           ))}
         </div>
-
-        {/* Task list */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.25 }}
-            className="space-y-3"
-          >
-            {displayed.length === 0 ? (
-              tab === 'active' ? (
-                <EmptyState
-                  emoji="🚀"
-                  message="No active tasks yet. Type in a big task above and let's break it down!"
-                />
-              ) : (
-                <EmptyState
-                  emoji="🏆"
-                  message="No completed tasks yet. Finish your sub-tasks to earn coins!"
-                />
-              )
-            ) : (
-              displayed.map(task => (
-                <CompactTaskCard
-                  key={task.id}
-                  task={task}
-                  onTap={() => setFocusedTask(task)}
-                />
-              ))
-            )}
-          </motion.div>
-        </AnimatePresence>
       </div>
+
+      {/* Scrollable task stack */}
+      <div className="flex-1 min-h-0">
+        <div className="h-full">
+            {displayed.length === 0 ? (
+              <div className="max-w-lg mx-auto px-4">
+                {tab === 'active' ? (
+                  <EmptyState emoji="🚀" message="No active tasks yet. Type in a big task above and let's break it down!" />
+                ) : (
+                  <EmptyState emoji="🏆" message="No completed tasks yet. Finish your sub-tasks to earn coins!" />
+                )}
+              </div>
+            ) : (
+              <div className="max-w-lg mx-auto px-4 pt-4 space-y-4 overflow-y-auto h-full pb-24">
+                {displayed.map(task => {
+                  const progress = calculateProgress(task.subTasks)
+                  const doneCount = task.subTasks.filter(st => st.completed).length
+                  return (
+                    <motion.div
+                      key={task.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <SpotlightCard
+                        className="py-8 px-6 cursor-pointer relative group"
+                        spotlightColor="rgba(0, 229, 255, 0.12)"
+                      >
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
+                          className="absolute top-3 right-3 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-600 hover:text-neon-pink transition-colors"
+                          aria-label="Delete task"
+                        >
+                          ×
+                        </button>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setFocusedTask(task)}
+                          onKeyDown={e => { if (e.key === 'Enter') setFocusedTask(task) }}
+                          className="flex flex-col items-center"
+                        >
+                          <p className="text-white font-body text-lg mb-1">{task.name}</p>
+                          <p className="text-gray-500 text-xs mb-6">{doneCount}/{task.subTasks.length} done</p>
+                          <CircularProgressEmoji emoji={task.emoji} progress={progress} size={120} />
+                        </div>
+                      </SpotlightCard>
+                    </motion.div>
+                  )
+                })}
+              </div>
+            )}
+        </div>
+      </div>
+
+      {/* Focus view overlay */}
+      <AnimatePresence>
+        {focusedTask && (
+          <FocusView
+            task={focusedTask}
+            readOnly={focusedTask.completed}
+            onClose={() => setFocusedTask(null)}
+            onEditName={handleEditName}
+            onToggleSubTask={handleToggleSubTask}
+            onEditSubTaskName={handleEditSubTaskName}
+            onDeleteSubTask={handleDeleteSubTask}
+            onAddSubTask={handleAddSubTask}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Completion confirm modal */}
+      <AnimatePresence>
+        {pendingComplete && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="bg-base-800 border border-base-700 rounded-2xl p-6 max-w-sm w-full text-center"
+            >
+              <p className="text-4xl mb-3">🎉</p>
+              <p className="text-white font-body text-sm mb-1">All sub-tasks done!</p>
+              <p className="text-gray-400 text-xs mb-6">Complete this task and earn 1 coin?</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={cancelComplete}
+                  className="flex-1 min-h-[44px] text-sm text-gray-400 border border-base-700 rounded-xl hover:bg-base-700 transition-colors"
+                >
+                  Not yet
+                </button>
+                <button
+                  onClick={confirmComplete}
+                  className="flex-1 min-h-[44px] text-sm text-neon-cyan border border-neon-cyan/30 rounded-xl bg-neon-cyan/10 hover:bg-neon-cyan/20 transition-colors"
+                >
+                  Complete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <BottomNavBar />
     </div>
@@ -250,32 +263,97 @@ export function TasksPage() {
 }
 
 
-// ── Compact card for list view ──
-function CompactTaskCard({ task, onTap }: { task: BigTask; onTap: () => void }) {
+// ── Full-screen focus view overlay ──
+function FocusView({
+  task,
+  readOnly,
+  onClose,
+  onEditName,
+  onToggleSubTask,
+  onEditSubTaskName,
+  onDeleteSubTask,
+  onAddSubTask,
+}: {
+  task: BigTask
+  readOnly?: boolean
+  onClose: () => void
+  onEditName: (id: string, name: string) => void
+  onToggleSubTask: (id: string, completed: boolean) => void
+  onEditSubTaskName: (id: string, name: string) => void
+  onDeleteSubTask: (id: string) => void
+  onAddSubTask: (bigTaskId: string, name: string) => void
+}) {
   const progress = calculateProgress(task.subTasks)
   const doneCount = task.subTasks.filter(st => st.completed).length
 
   return (
-    <SpotlightCard
-      className="cursor-pointer"
-      spotlightColor="rgba(0, 229, 255, 0.1)"
+    <motion.div
+      initial={{ opacity: 0, y: '100%' }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: '100%' }}
+      transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+      className="fixed inset-0 z-50 flex flex-col bg-base-900"
     >
-      <button
-        onClick={onTap}
-        className="w-full flex items-center gap-4 p-4 min-h-[44px] text-left"
-      >
-        <CircularProgressEmoji emoji={task.emoji} progress={progress} size={52} />
-        <div className="flex-1 min-w-0">
-          <p className={`text-sm font-body truncate ${task.completed ? 'text-gray-500 line-through' : 'text-white'}`}>
-            {task.name}
-          </p>
-          <p className="text-[10px] text-gray-500 mt-0.5">
+      {/* Aurora background */}
+      <div className="absolute inset-0 pointer-events-none opacity-40">
+        <Aurora amplitude={0.8} speed={0.4} blend={0.6} />
+      </div>
+
+      {/* Top bar */}
+      <div className="relative z-10 flex items-center justify-between px-4 pt-6 pb-2">
+        <button
+          onClick={onClose}
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors"
+          aria-label="Back"
+        >
+          ←
+        </button>
+        <div className="min-w-[44px]" />
+      </div>
+
+      {/* Scrollable content */}
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24">
+        <div className="max-w-lg mx-auto">
+          {/* Editable name */}
+          <div className="text-center mb-2">
+            {readOnly ? (
+              <p className="text-white font-body text-lg">{task.name}</p>
+            ) : (
+              <EditableTaskName
+                name={task.name}
+                onSave={(name) => onEditName(task.id, name)}
+              />
+            )}
+          </div>
+
+          <p className="text-gray-500 text-xs text-center mb-6">
             {doneCount}/{task.subTasks.length} done
           </p>
+
+          {/* Big emoji + progress ring */}
+          <div className="flex justify-center mb-8">
+            <CircularProgressEmoji emoji={task.emoji} progress={progress} size={140} />
+          </div>
+
+          {/* Sub-tasks */}
+          <div className="space-y-1">
+            {task.subTasks.map(st => (
+              <SubTaskItem
+                key={st.id}
+                subTask={st}
+                onToggle={onToggleSubTask}
+                onEditName={onEditSubTaskName}
+                onDelete={onDeleteSubTask}
+                readOnly={readOnly}
+              />
+            ))}
+          </div>
+
+          {/* Add sub-task */}
+          {!readOnly && <AddSubTaskInput onAdd={(name) => onAddSubTask(task.id, name)} />}
         </div>
-        <span className="text-gray-600 text-sm">›</span>
-      </button>
-    </SpotlightCard>
+      </div>
+    </motion.div>
   )
 }
 
@@ -292,21 +370,61 @@ function AddSubTaskInput({ onAdd }: { onAdd: (name: string) => void }) {
   }
 
   return (
-    <div className="flex gap-2 mt-4">
-      <input
-        value={value}
-        onChange={e => setValue(e.target.value)}
-        onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
-        placeholder="Add a sub-task..."
-        className="flex-1 bg-base-800 text-white text-xs px-3 py-2 rounded-lg border border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
-      />
+    <div className="flex items-center gap-2 mt-4">
+      <div className="min-w-[44px]" />
+      <div className="flex-1 min-w-0">
+        <input
+          value={value}
+          onChange={e => setValue(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
+          placeholder="Add a sub-task..."
+          className="w-full bg-transparent text-white text-xs px-0 py-2 border-b border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
+        />
+      </div>
       <button
         onClick={handleAdd}
-        className="min-w-[44px] min-h-[44px] bg-neon-cyan/20 text-neon-cyan text-xs font-pixel rounded-lg hover:bg-neon-cyan/30 transition-colors"
+        className="text-gray-500 hover:text-neon-cyan transition-colors text-lg leading-none min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Add sub-task"
       >
         +
       </button>
     </div>
+  )
+}
+
+// ── Inline editable task name ──
+function EditableTaskName({ name, onSave }: { name: string; onSave: (name: string) => void }) {
+  const [editing, setEditing] = useState(false)
+  const [value, setValue] = useState(name)
+
+  useEffect(() => { setValue(name) }, [name])
+
+  const handleSave = () => {
+    const trimmed = value.trim()
+    if (trimmed && trimmed !== name) onSave(trimmed)
+    else setValue(name)
+    setEditing(false)
+  }
+
+  if (editing) {
+    return (
+      <input
+        value={value}
+        onChange={e => setValue(e.target.value)}
+        onBlur={handleSave}
+        onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') { setValue(name); setEditing(false) } }}
+        className="w-full bg-transparent text-white text-lg text-center px-1 py-1 border-b border-neon-cyan/30 outline-none focus:border-neon-cyan font-body"
+        autoFocus
+      />
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      className="text-white font-body text-lg hover:text-neon-cyan transition-colors cursor-text"
+    >
+      {name}
+    </button>
   )
 }

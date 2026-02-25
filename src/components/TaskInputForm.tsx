@@ -6,7 +6,6 @@ interface TaskInputFormProps {
   loading?: boolean
 }
 
-// Check Web Speech API support
 const SpeechRecognition =
   typeof window !== 'undefined'
     ? (window as unknown as Record<string, unknown>).SpeechRecognition ??
@@ -33,11 +32,7 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
   }
 
   useEffect(() => {
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort()
-      }
-    }
+    return () => { recognitionRef.current?.abort() }
   }, [])
 
   const handleSubmit = () => {
@@ -61,7 +56,6 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
 
     const recognition = createRecognition()
     if (!recognition) return
-
     recognitionRef.current = recognition
 
     recognition.onresult = (event: { results: { transcript: string }[][] }) => {
@@ -70,22 +64,15 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
       setListening(false)
       setError('')
     }
-
-    recognition.onerror = () => {
-      setListening(false)
-    }
-
-    recognition.onend = () => {
-      setListening(false)
-    }
-
+    recognition.onerror = () => setListening(false)
+    recognition.onend = () => setListening(false)
     recognition.start()
     setListening(true)
   }
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-2">
+      <div className="relative">
         <input
           ref={inputRef}
           value={value}
@@ -93,35 +80,43 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
           onKeyDown={e => { if (e.key === 'Enter' && !loading) handleSubmit() }}
           placeholder="What's the big task?"
           disabled={loading}
-          className="flex-1 bg-base-800 text-white text-sm px-4 py-3 rounded-xl border border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600 disabled:opacity-50"
+          className={`w-full bg-transparent text-white text-sm pl-0 py-2 border-b outline-none placeholder-gray-600 disabled:opacity-50 ${
+            speechSupported ? 'pr-20' : 'pr-10'
+          } ${error ? 'border-neon-pink' : 'border-base-700 focus:border-neon-cyan/50'}`}
           aria-label="Task description"
           aria-invalid={!!error}
         />
-        {speechSupported && (
+        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
+          {speechSupported && (
+            <button
+              onClick={handleVoiceInput}
+              disabled={loading}
+              className={`min-w-[36px] min-h-[36px] flex items-center justify-center transition-colors ${
+                listening
+                  ? 'text-neon-pink animate-pulse'
+                  : 'text-gray-500 hover:text-neon-cyan'
+              } disabled:opacity-50`}
+              aria-label={listening ? 'Stop voice input' : 'Start voice input'}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                <line x1="12" x2="12" y1="19" y2="22" />
+              </svg>
+            </button>
+          )}
           <button
-            onClick={handleVoiceInput}
+            onClick={handleSubmit}
             disabled={loading}
-            className={`min-w-[44px] min-h-[44px] rounded-xl border transition-colors flex items-center justify-center ${
-              listening
-                ? 'bg-neon-pink/20 border-neon-pink text-neon-pink animate-pulse'
-                : 'bg-base-800 border-base-700 text-gray-400 hover:text-neon-cyan hover:border-neon-cyan/30'
-            } disabled:opacity-50`}
-            aria-label={listening ? 'Stop voice input' : 'Start voice input'}
+            className="text-gray-500 hover:text-neon-cyan transition-colors text-lg leading-none min-w-[36px] min-h-[36px] flex items-center justify-center disabled:opacity-50"
+            aria-label="Add task"
           >
-            🎤
+            {loading ? '...' : '+'}
           </button>
-        )}
-        <button
-          onClick={handleSubmit}
-          disabled={loading}
-          className="min-w-[44px] min-h-[44px] px-4 bg-neon-cyan/20 text-neon-cyan font-pixel text-xs rounded-xl border border-neon-cyan/30 hover:bg-neon-cyan/30 transition-colors disabled:opacity-50"
-          aria-label="Submit task"
-        >
-          {loading ? '...' : 'Go'}
-        </button>
+        </div>
       </div>
       {error && (
-        <p className="text-neon-pink text-xs px-1" role="alert">{error}</p>
+        <p className="text-neon-pink text-xs" role="alert">{error}</p>
       )}
     </div>
   )

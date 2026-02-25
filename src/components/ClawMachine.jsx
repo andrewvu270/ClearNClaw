@@ -15,7 +15,7 @@ const adjustAngle = (angle) => {
   return a < 0 ? a + 360 : a
 }
 
-export default function ClawMachine() {
+export default function ClawMachine({ playable = true, onTurnEnd, userId, active = true, seed }) {
   const boxRef = useRef(null)
   const machineRef = useRef(null)
   const machineTopRef = useRef(null)
@@ -29,6 +29,14 @@ export default function ClawMachine() {
   const collectionArrowRef = useRef(null)
   const [loading, setLoading] = useState(true)
   const keyActiveRef = useRef({ ArrowRight: false, ArrowUp: false })
+  const playableRef = useRef(playable)
+
+  useEffect(() => {
+    playableRef.current = playable
+    if (playable && horiBtnRef.current && gameRef.current.objects.armJoint) {
+      activateHoriBtn()
+    }
+  }, [playable]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // mutable game state stored in refs so we don't re-render on every frame
   const gameRef = useRef({
@@ -192,12 +200,22 @@ export default function ClawMachine() {
     toy.el.classList.add('display')
     g.collectedNumber++
 
+    // First, try to get existing count
     supabase
       .from('user_toys')
-      .upsert(
-        { user_id: 'anonymous', toy_id: toy.toyType, count: 1 },
-        { onConflict: 'user_id,toy_id' }
-      )
+      .select('count')
+      .eq('user_id', userId || 'anonymous')
+      .eq('toy_id', toy.toyType)
+      .single()
+      .then(({ data }) => {
+        const newCount = data ? data.count + 1 : 1
+        return supabase
+          .from('user_toys')
+          .upsert(
+            { user_id: userId || 'anonymous', toy_id: toy.toyType, count: newCount },
+            { onConflict: 'user_id,toy_id' }
+          )
+      })
       .then(() => {
         if (window.parent) {
           window.parent.postMessage({ type: 'TOY_COLLECTED', toyId: toy.toyType }, '*')
@@ -269,6 +287,7 @@ export default function ClawMachine() {
   }
 
   const activateHoriBtn = () => {
+    if (!playableRef.current) return
     const g = gameRef.current
     activateBtn(horiBtnRef.current)
     const { vertRail, armJoint, arm } = g.objects
@@ -297,7 +316,6 @@ export default function ClawMachine() {
     }
     setTimeout(() => {
       arm.el.classList.remove('open')
-      activateHoriBtn()
       if (g.targetToy) {
         g.targetToy.el.classList.add('selected')
         collectionArrowRef.current?.classList.add('active')
@@ -351,6 +369,7 @@ export default function ClawMachine() {
     const { armJoint, arm, vertRail } = g.objects
     clearObjInterval(armJoint)
     deactivateBtn(vertBtnRef.current)
+    onTurnEnd?.()
     getClosestToy()
     setTimeout(() => {
       arm.el.classList.add('open')
@@ -390,82 +409,105 @@ export default function ClawMachine() {
       g.toys = toys
       const ogKeys = Object.keys(g.toys).filter((k) => g.toys[k].group === 'og')
       const otherKeys = Object.keys(g.toys).filter((k) => g.toys[k].group !== 'og')
-      g.sortedToys = new Array(12).fill('').map(() => {
-        if (Math.random() < 0.7 && ogKeys.length) {
-          return ogKeys[randomN(0, ogKeys.length - 1)]
+      
+      // Use seeded random if seed provided, otherwise use Math.random
+      let seededRand = Math.random
+      if (seed) {
+        let state = 0
+        for (let i = 0; i < seed.length; i++) {
+          state = ((state << 5) - state) + seed.charCodeAt(i)
+          state = state & state
         }
-        return otherKeys[randomN(0, otherKeys.length - 1)]
+        state = Math.abs(state)
+        seededRand = () => {
+          state = (state * 1664525 + 1013904223) | 0
+          return Math.abs(state) / 0x100000000
+        }
+      }
+      
+      g.sortedToys = new Array(12).fill('').map(() => {
+        if (seededRand() < 0.7 && ogKeys.length) {
+          const idx = Math.floor(seededRand() * ogKeys.length)
+          return ogKeys[idx]
+        }
+        const idx = Math.floor(seededRand() * otherKeys.length)
+        return otherKeys[idx]
       })
     } catch (err) {
       console.error('Error fetching toys:', err)
     }
   }
 
-  // ---- Init on mount ----
+  // ---- Init when active (visible) ----
 
   useEffect(() => {
     const g = gameRef.current
-    if (g.initialized) return
-    g.initialized = true
+    if (!active || g.initialized) return
+    // Wait a frame so the browser has laid out the now-visible element
+    const rafId = requestAnimationFrame(() => {
+      if (g.initialized) return
+      g.initialized = true
 
-    // measure DOM
-    const machineRect = machineRef.current.getBoundingClientRect()
-    g.machineWidth = machineRect.width
-    g.machineHeight = machineRect.height
-    g.machineTop = machineRect.top
+      // measure DOM
+      const machineRect = machineRef.current.getBoundingClientRect()
+      g.machineWidth = machineRect.width
+      g.machineHeight = machineRect.height
+      g.machineTop = machineRect.top
 
-    const mtRect = machineTopRef.current.getBoundingClientRect()
-    g.machineTopHeight = mtRect.height
+      const mtRect = machineTopRef.current.getBoundingClientRect()
+      g.machineTopHeight = mtRect.height
 
-    const mbRect = machineBottomRef.current.getBoundingClientRect()
-    g.machineBottomHeight = mbRect.height
-    g.machineBottomTop = mbRect.top
+      const mbRect = machineBottomRef.current.getBoundingClientRect()
+      g.machineBottomHeight = mbRect.height
+      g.machineBottomTop = mbRect.top
 
-    g.maxArmLength = g.machineBottomTop - g.machineTop - MACHINE_BUFFER.y
-    boxRef.current.style.setProperty('--shadow-pos', `${g.maxArmLength}px`)
+      g.maxArmLength = g.machineBottomTop - g.machineTop - MACHINE_BUFFER.y
+      boxRef.current.style.setProperty('--shadow-pos', `${g.maxArmLength}px`)
 
-    // create world objects
-    const armJoint = createWorldObject(armJointRef.current)
-    const vertRail = createWorldObject(vertRailRef.current)
-    const arm = createWorldObject(armRef.current)
+      // create world objects
+      const armJoint = createWorldObject(armJointRef.current)
+      const vertRail = createWorldObject(vertRailRef.current)
+      const arm = createWorldObject(armRef.current)
 
-    vertRail.moveWith = [null, armJoint]
-    g.objects = { armJoint, vertRail, arm }
+      vertRail.moveWith = [null, armJoint]
+      g.objects = { armJoint, vertRail, arm }
 
-    resizeShadow(armJoint)
+      resizeShadow(armJoint)
 
-    // initial animation: move arm into position
-    moveObject(armJoint, {
-      moveKey: 'y',
-      target: g.machineTopHeight - MACHINE_BUFFER.y,
-      moveTime: 50,
-      next: () =>
-        resumeMove(vertRail, {
-          moveKey: 'x',
-          target: MACHINE_BUFFER.x,
-          moveTime: 50,
-          next: () => {
-            Object.assign(armJoint.default, { y: g.machineTopHeight - MACHINE_BUFFER.y, x: MACHINE_BUFFER.x })
-            Object.assign(vertRail.default, { x: MACHINE_BUFFER.x })
-            activateHoriBtn()
-          },
-        }),
-    })
-
-    // fetch toys and create them
-    fetchToys().then(() => {
-      new Array(12).fill('').forEach((_, i) => {
-        if (i === 8) return
-        createToy(i)
+      // initial animation: move arm into position
+      moveObject(armJoint, {
+        moveKey: 'y',
+        target: g.machineTopHeight - MACHINE_BUFFER.y,
+        moveTime: 50,
+        next: () =>
+          resumeMove(vertRail, {
+            moveKey: 'x',
+            target: MACHINE_BUFFER.x,
+            moveTime: 50,
+            next: () => {
+              Object.assign(armJoint.default, { y: g.machineTopHeight - MACHINE_BUFFER.y, x: MACHINE_BUFFER.x })
+              Object.assign(vertRail.default, { x: MACHINE_BUFFER.x })
+              if (playableRef.current) activateHoriBtn()
+            },
+          }),
       })
-      setLoading(false)
+
+      // fetch toys and create them
+      fetchToys().then(() => {
+        new Array(12).fill('').forEach((_, i) => {
+          if (i === 8) return
+          createToy(i)
+        })
+        setLoading(false)
+      })
     })
 
     return () => {
+      cancelAnimationFrame(rafId)
       g.intervals.forEach((id) => clearInterval(id))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [active])
 
   // ---- Keyboard controls ----
 
