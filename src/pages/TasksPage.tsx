@@ -210,7 +210,7 @@ export function TasksPage() {
                         >
                           <p className="text-white font-body text-lg mb-1">{task.name}</p>
                           <p className="text-gray-500 text-xs mb-6">{doneCount}/{task.subTasks.length} done</p>
-                          <CircularProgressEmoji emoji={task.emoji} progress={progress} size={120} />
+                          <CircularProgressEmoji emoji={task.emoji} progress={progress} size={150} />
                         </div>
                       </SpotlightCard>
                     </motion.div>
@@ -350,7 +350,7 @@ function FocusView({
 
           {/* Big emoji + progress ring */}
           <div className="flex justify-center mb-8">
-            <CircularProgressEmoji emoji={task.emoji} progress={progress} size={180} />
+            <CircularProgressEmoji emoji={task.emoji} progress={progress} size={225} />
           </div>
 
           {/* Sub-tasks */}

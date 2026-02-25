@@ -9,6 +9,7 @@ interface CircularProgressEmojiProps {
 export function CircularProgressEmoji({ emoji, progress, size = 64 }: CircularProgressEmojiProps) {
   const strokeWidth = size * 0.08
   const radius = (size - strokeWidth) / 2
+  const innerRadius = radius - strokeWidth / 2
   const circumference = 2 * Math.PI * radius
   const offset = circumference * (1 - Math.min(Math.max(progress, 0), 1))
   const emojiSize = Math.max(size * 0.55, 32)
@@ -16,6 +17,13 @@ export function CircularProgressEmoji({ emoji, progress, size = 64 }: CircularPr
   return (
     <div className="relative inline-flex items-center justify-center" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="absolute -rotate-90">
+        {/* Filled background circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={innerRadius}
+          fill="rgba(206, 207, 253, 1)"
+        />
         {/* Background track */}
         <circle
           cx={size / 2}
