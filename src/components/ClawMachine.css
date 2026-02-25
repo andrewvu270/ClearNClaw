@@ -16,12 +16,22 @@
   --m: 2.3;
 }
 
+@media (max-width: 420px) {
+  :root {
+    --m: 2.05;
+  }
+}
+
+@media (max-width: 360px) {
+  :root {
+    --m: 1.80;
+  }
+}
+
 .wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh;
-  min-height: 600px;
   flex-direction: column;
   user-select: none;
   -webkit-user-select: none;
@@ -77,9 +87,13 @@
   --h: 32px;
   width: calc(var(--m) * var(--machine-width));
   margin: calc(var(--m) * var(--h) * -1 - 10px) 0 1px;
-  display: flex;
-  align-items: bottom;
-  justify-content: start;
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .collection-box {
+    display: flex;
+  }
 }
 
 .collection-box .toy-wrapper {
