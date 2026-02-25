@@ -34,7 +34,7 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onDelete, readOnly 
         <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
           subTask.completed
             ? 'bg-neon-cyan/20 border-neon-cyan text-neon-cyan'
-            : 'border-gray-500 hover:border-neon-cyan'
+            : 'border-gray-500'
         }`}>
           {subTask.completed && <span className="text-xs">✓</span>}
         </div>
@@ -47,13 +47,13 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onDelete, readOnly 
             onChange={e => setEditValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-            className="w-full bg-base-900 text-white text-xs px-2 py-1 rounded border border-neon-cyan/30 outline-none focus:border-neon-cyan"
+            className="w-full bg-base-900 text-white text-sm px-2 py-1 rounded border border-neon-cyan/30 outline-none focus:border-neon-cyan"
             autoFocus
           />
         ) : (
           <button
             onClick={() => !readOnly && setEditing(true)}
-            className={`text-xs text-left truncate w-full ${
+            className={`text-sm text-left truncate w-full ${
               subTask.completed ? 'text-gray-500 line-through' : 'text-gray-200'
             } ${readOnly ? 'cursor-default' : ''}`}
           >
@@ -65,7 +65,7 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onDelete, readOnly 
       {!readOnly && (
         <button
           onClick={() => onDelete(subTask.id)}
-          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 opacity-0 group-hover:opacity-100 hover:text-neon-pink transition-all"
+          className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-neon-pink transition-all"
           aria-label="Delete sub-task"
         >
           ×
