@@ -24,6 +24,29 @@ export function TasksPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [focusedTask, setFocusedTask] = useState<BigTask | null>(null)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const [restoredFocus, setRestoredFocus] = useState(false)
+
+  // Persist focused task ID across navigation
+  const setFocusedTaskAndPersist = useCallback((task: BigTask | null) => {
+    setFocusedTask(task)
+    if (task) {
+      sessionStorage.setItem('focusedTaskId', task.id)
+    } else {
+      sessionStorage.removeItem('focusedTaskId')
+    }
+  }, [])
+
+  // Restore focused task from sessionStorage after tasks load
+  useEffect(() => {
+    if (!dataLoaded || restoredFocus) return
+    setRestoredFocus(true)
+    const savedId = sessionStorage.getItem('focusedTaskId')
+    if (savedId) {
+      const found = tasks.find(t => t.id === savedId)
+      if (found) setFocusedTask(found)
+      else sessionStorage.removeItem('focusedTaskId')
+    }
+  }, [dataLoaded, tasks, restoredFocus])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -130,7 +153,7 @@ export function TasksPage() {
 
   const handleDelete = async (taskId: string) => {
     await taskService.deleteBigTask(taskId)
-    setFocusedTask(null)
+    setFocusedTaskAndPersist(null)
     await fetchTasks()
   }
 
@@ -211,7 +234,7 @@ export function TasksPage() {
                       <SpotlightCard
                         className={`py-8 px-6 cursor-pointer relative group ${gradientBg}`}
                         spotlightColor="rgba(0, 229, 255, 0.12)"
-                        onClick={() => setFocusedTask(task)}
+                        onClick={() => setFocusedTaskAndPersist(task)}
                       >
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
@@ -260,7 +283,7 @@ export function TasksPage() {
           <FocusView
             task={focusedTask}
             readOnly={focusedTask.completed}
-            onClose={() => setFocusedTask(null)}
+            onClose={() => setFocusedTaskAndPersist(null)}
             onEditName={handleEditName}
             onEditEmoji={handleEditEmoji}
             onToggleSubTask={handleToggleSubTask}
@@ -357,11 +380,11 @@ function FocusView({
       </div>
 
       {/* Scrollable content — back button scrolls with content */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24 pt-6">
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24 pt-10">
         <div className="max-w-lg mx-auto">
           <button
             onClick={onClose}
-            className="min-w-[44px] min-h-[44px] flex items-center justify-center text-gray-400 hover:text-white transition-colors mb-2"
+            className="min-w-[52px] min-h-[52px] flex items-center justify-center text-gray-400 hover:text-white transition-colors mt-4 mb-4 text-2xl"
             aria-label="Back"
           >
             ←
@@ -370,7 +393,7 @@ function FocusView({
           {/* Editable name */}
           <div className="text-center mb-2">
             {readOnly ? (
-              <p className="text-white font-body text-xl">{task.name}</p>
+              <p className="text-white font-body text-2xl">{task.name}</p>
             ) : (
               <EditableTaskName
                 name={task.name}
@@ -440,7 +463,7 @@ function AddSubTaskInput({ onAdd }: { onAdd: (name: string) => void }) {
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
           placeholder="Add a sub-task..."
-          className="w-full bg-transparent text-white text-sm px-0 py-2 border-b border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
+          className="w-full bg-transparent text-white text-base px-0 py-2 border-b border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
         />
       </div>
       <div className="w-10 shrink-0" />
@@ -514,7 +537,7 @@ function EditableTaskName({ name, onSave }: { name: string; onSave: (name: strin
         onChange={e => setValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') { setValue(name); setEditing(false) } }}
-        className="w-full bg-transparent text-white text-xl text-center px-1 py-1 border-b border-neon-cyan/30 outline-none focus:border-neon-cyan font-body"
+        className="w-full bg-transparent text-white text-2xl text-center px-1 py-1 border-b border-neon-cyan/30 outline-none focus:border-neon-cyan font-body"
         autoFocus
       />
     )
@@ -523,7 +546,7 @@ function EditableTaskName({ name, onSave }: { name: string; onSave: (name: strin
   return (
     <button
       onClick={() => setEditing(true)}
-      className="text-white font-body text-xl hover:text-neon-cyan transition-colors cursor-text"
+      className="text-white font-body text-2xl hover:text-neon-cyan transition-colors cursor-text"
     >
       {name}
     </button>

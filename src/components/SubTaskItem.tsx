@@ -46,7 +46,7 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
   }
 
   return (
-    <div className="flex items-start gap-3 group min-h-[48px]">
+    <div className="flex items-center gap-3 group min-h-[48px]">
       {/* Emoji with background circle */}
       {editingEmoji && !readOnly ? (
         <input
@@ -55,19 +55,19 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
           onChange={e => setEmojiValue(e.target.value)}
           onBlur={handleEmojiSave}
           onKeyDown={e => { if (e.key === 'Enter') handleEmojiSave() }}
-          className="w-8 h-8 mt-1 text-center text-lg bg-base-800 rounded-full border border-neon-cyan/30 outline-none focus:border-neon-cyan shrink-0"
+          className="w-10 h-10 text-center text-xl bg-base-800 rounded-full border border-neon-cyan/30 outline-none focus:border-neon-cyan shrink-0"
           maxLength={4}
         />
       ) : (
         <button
           onClick={handleEmojiClick}
-          className={`w-8 h-8 mt-1 flex items-center justify-center rounded-full shrink-0 transition-colors ${
+          className={`w-10 h-10 flex items-center justify-center rounded-full shrink-0 transition-colors ${
             readOnly ? 'cursor-default' : 'hover:brightness-110 active:scale-95'
           }`}
           style={{ backgroundColor: 'rgba(255, 182, 216, 0.68)' }}
           aria-label="Edit emoji"
         >
-          <span className="text-lg select-none leading-none">{subTask.emoji}</span>
+          <span className="text-xl select-none leading-none">{subTask.emoji}</span>
         </button>
       )}
 
@@ -79,13 +79,13 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
             onChange={e => setEditValue(e.target.value)}
             onBlur={handleSave}
             onKeyDown={e => { if (e.key === 'Enter') handleSave() }}
-            className="w-full bg-base-900 text-white text-sm px-2 py-1 rounded border border-neon-cyan/30 outline-none focus:border-neon-cyan"
+            className="w-full bg-base-900 text-white text-base px-2 py-1 rounded border border-neon-cyan/30 outline-none focus:border-neon-cyan"
             autoFocus
           />
         ) : (
           <button
             onClick={() => !readOnly && setEditing(true)}
-            className={`text-sm text-left break-words w-full ${
+            className={`text-base text-left break-words w-full ${
               subTask.completed ? 'text-gray-500 line-through' : 'text-gray-200'
             } ${readOnly ? 'cursor-default' : ''}`}
           >
