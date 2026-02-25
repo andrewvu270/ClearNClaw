@@ -78,11 +78,26 @@ export function SignInPage() {
   const verifyOtp = async (token: string) => {
     setLoading(true)
     setError('')
-    const { error: verifyError } = await supabase.auth.verifyOtp({
+
+    // For existing users, signInWithOtp uses recovery flow internally (type: 'magiclink')
+    // For new users (auto-created), it uses confirmation flow (type: 'email')
+    // Try magiclink first since most logins are existing users
+    let { error: verifyError } = await supabase.auth.verifyOtp({
       email: email.trim(),
       token,
-      type: 'email',
+      type: 'magiclink',
     })
+
+    if (verifyError) {
+      // Fallback: try as new signup confirmation
+      const fallback = await supabase.auth.verifyOtp({
+        email: email.trim(),
+        token,
+        type: 'email',
+      })
+      verifyError = fallback.error
+    }
+
     setLoading(false)
     if (verifyError) {
       setError(verifyError.message)
