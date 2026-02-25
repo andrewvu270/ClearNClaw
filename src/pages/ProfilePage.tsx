@@ -31,6 +31,7 @@ export function ProfilePage() {
   const [toys, setToys] = useState<UserToy[]>([])
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
   const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string; isRare?: boolean; isElectric?: boolean; group?: string } | null>(null)
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   // Lock body scroll when popup is open
   useEffect(() => {
@@ -48,8 +49,10 @@ export function ProfilePage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
       const uid = session.user.id
-      getProfile(uid).then(setProfile)
-      getToyCollection(uid).then(setToys)
+      Promise.all([
+        getProfile(uid).then(setProfile),
+        getToyCollection(uid).then(setToys),
+      ]).then(() => setDataLoaded(true))
     })
     getCachedToys().then((data: Record<string, ToyInfo> | null) => {
       if (data) setToyData(data)
@@ -103,6 +106,12 @@ export function ProfilePage() {
         <h1 className="text-neon-cyan text-xs text-center mb-2 font-pixel opacity-0 pointer-events-none">Profile</h1>
 
         {/* Stats */}
+        {dataLoaded ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
         <div className="flex items-center justify-center gap-8 mb-6">
           <div className="p-4 text-center">
             <p className="text-3xl mb-1">✅</p>
@@ -218,6 +227,12 @@ export function ProfilePage() {
               ))}
             </div>
           </>
+        )}
+          </motion.div>
+        ) : (
+          <div className="flex justify-center pt-16">
+            <span className="text-gray-600 text-xs animate-pulse">Loading...</span>
+          </div>
         )}
       </div>
 

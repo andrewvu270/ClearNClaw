@@ -23,6 +23,7 @@ export function TasksPage() {
   const [loading, setLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [focusedTask, setFocusedTask] = useState<BigTask | null>(null)
+  const [dataLoaded, setDataLoaded] = useState(false)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -41,6 +42,7 @@ export function TasksPage() {
       taskService.getBigTasks(userId, true),
     ])
     setTasks([...active, ...done])
+    setDataLoaded(true)
   }, [userId])
 
   useEffect(() => { fetchTasks() }, [userId, fetchTasks])
@@ -169,6 +171,15 @@ export function TasksPage() {
       {/* Scrollable task stack */}
       <div className="flex-1 min-h-0 relative z-10">
         <div className="h-full">
+          <AnimatePresence>
+            {dataLoaded ? (
+              <motion.div
+                key="content"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+                className="h-full"
+              >
             {displayed.length === 0 ? (
               <div className="max-w-lg mx-auto px-4">
                 {tab === 'active' ? (
@@ -227,6 +238,19 @@ export function TasksPage() {
                 })}
               </div>
             )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex justify-center pt-16"
+              >
+                <span className="text-gray-600 text-xs animate-pulse">Loading...</span>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
