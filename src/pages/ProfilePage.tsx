@@ -30,7 +30,7 @@ export function ProfilePage() {
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [toys, setToys] = useState<UserToy[]>([])
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
-  const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string } | null>(null)
+  const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string; isRare?: boolean; isElectric?: boolean; group?: string } | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -139,7 +139,7 @@ export function ProfilePage() {
                 const info = toyData[ut.toyId]
                 const isMax = maxCount > 0 && ut.count === maxCount
                 const isRare = rareSet.has(ut.toyId)
-                const handleTap = () => setSelectedToy({ name: ut.toyId, count: ut.count, sprite: info?.sCollected || info?.sNormal })
+                const handleTap = () => setSelectedToy({ name: ut.toyId, count: ut.count, sprite: info?.sCollected || info?.sNormal, isRare, isElectric: isMax && !isRare, group: info?.group || 'Other' })
                 const card = (
                   <ToyCard
                     key={ut.toyId}
@@ -178,7 +178,7 @@ export function ProfilePage() {
                       const owned = count > 0
                       const isRare = owned && rareSet.has(name)
                       const isMax = owned && maxCount > 0 && count === maxCount
-                      const handleTap = () => owned && setSelectedToy({ name, count, sprite: info?.sCollected || info?.sNormal })
+                      const handleTap = () => owned && setSelectedToy({ name, count, sprite: info?.sCollected || info?.sNormal, isRare, isElectric: isMax && !isRare, group: info?.group || 'Other' })
 
                       const card = (
                         <ToyCard
@@ -226,29 +226,23 @@ export function ProfilePage() {
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
               onClick={e => e.stopPropagation()}
             >
-              <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
-                <div className="bg-base-800 border border-base-700 rounded-2xl p-8 max-w-sm w-full text-center" style={{ transformStyle: 'preserve-3d' }}>
-                  {selectedToy.sprite ? (
-                    <img
-                      src={selectedToy.sprite}
-                      alt={selectedToy.name}
-                      className="w-40 h-40 object-contain mx-auto mb-5"
-                      style={{ transform: 'translateZ(40px)' }}
-                    />
-                  ) : (
-                    <div className="w-40 h-40 bg-base-700 rounded-xl mx-auto mb-5 flex items-center justify-center text-6xl" style={{ transform: 'translateZ(40px)' }}>🧸</div>
-                  )}
-                  <p className="text-white font-body text-base mb-1" style={{ transform: 'translateZ(25px)' }}>{selectedToy.name}</p>
-                  <p className="text-neon-cyan font-pixel text-sm" style={{ transform: 'translateZ(25px)' }}>×{selectedToy.count} collected</p>
-                  <button
-                    onClick={() => setSelectedToy(null)}
-                    className="mt-5 min-h-[44px] px-6 text-sm text-gray-400 border border-base-700 rounded-xl hover:bg-base-700 transition-colors"
-                    style={{ transform: 'translateZ(20px)' }}
-                  >
-                    close
-                  </button>
-                </div>
-              </TiltedCard>
+              {selectedToy.isRare ? (
+                <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+                  <ElectricBorder borderRadius={16} color="#7df9ff" speed={1} chaos={0.03}>
+                    <ToyPopupContent toy={selectedToy} />
+                  </ElectricBorder>
+                </TiltedCard>
+              ) : selectedToy.isElectric ? (
+                <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+                  <div className="rounded-2xl p-[2px]" style={{ background: 'linear-gradient(135deg, #00e5ff, #7c3aed, #ec4899, #00e5ff)' }}>
+                    <ToyPopupContent toy={selectedToy} />
+                  </div>
+                </TiltedCard>
+              ) : (
+                <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+                  <ToyPopupContent toy={selectedToy} />
+                </TiltedCard>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -307,6 +301,33 @@ function ToyCard({
       {owned && (
         <p className="text-[9px] text-neon-cyan mt-0.5">×{count}</p>
       )}
+    </div>
+  )
+}
+
+function ToyPopupContent({ toy }: { toy: { name: string; count: number; sprite?: string; group?: string } }) {
+  return (
+    <div className="relative bg-base-800 border border-base-700 rounded-2xl p-8 max-w-sm w-full text-center" style={{ transformStyle: 'preserve-3d' }}>
+      <div
+        className="absolute inset-0 rounded-2xl pointer-events-none"
+        style={{
+          transform: 'translateZ(2px)',
+          background: `radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(0,229,255,0.15) 0%, rgba(168,85,247,0.12) 25%, rgba(236,72,153,0.1) 50%, rgba(34,211,238,0.08) 75%, transparent 100%)`,
+        }}
+      />
+      {toy.sprite ? (
+        <img
+          src={toy.sprite}
+          alt={toy.name}
+          className="w-40 h-40 object-contain mx-auto mb-5"
+          style={{ transform: 'translateZ(80px)' }}
+        />
+      ) : (
+        <div className="w-40 h-40 bg-base-700 rounded-xl mx-auto mb-5 flex items-center justify-center text-6xl" style={{ transform: 'translateZ(80px)' }}>🧸</div>
+      )}
+      <p className="text-white font-body text-base mb-1" style={{ transform: 'translateZ(50px)' }}>{toy.name}</p>
+      <p className="text-neon-cyan font-pixel text-sm mb-2" style={{ transform: 'translateZ(50px)' }}>×{toy.count} collected</p>
+      <p className="text-neon-pink/70 font-pixel text-[10px] uppercase tracking-wider" style={{ transform: 'translateZ(35px)' }}>{toy.group || 'Other'}</p>
     </div>
   )
 }
