@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { Aurora } from '../components/Aurora'
 
 const ThreeBackground = lazy(() => import('../components/ThreeBackground'))
 
@@ -32,23 +33,24 @@ export function SignInPage() {
     setEmailSent(true)
   }
 
-  const handleOAuth = async (provider: 'github') => {
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: { redirectTo: window.location.origin + '/tasks' },
-    })
-  }
-
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        <Aurora
+          colorStops={['#00e5ff', '#064e3b', '#ff1493']}
+          amplitude={1.2}
+          blend={0.6}
+          speed={0.8}
+        />
+      </div>
       <Suspense fallback={null}>
-        <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 -z-10 pointer-events-none hidden md:block">
           <ThreeBackground />
         </div>
       </Suspense>
 
       <div className="relative z-10 bg-base-800/90 backdrop-blur-sm rounded-2xl border border-base-700 p-8 max-w-sm w-full mx-4 shadow-2xl shadow-black/40">
-        <h1 className="text-neon-cyan text-sm text-center mb-2">ADHD Task Breaker</h1>
+        <h1 className="text-neon-cyan text-sm text-center mb-2">Clear & Claw</h1>
         <p className="text-gray-400 text-xs font-body text-center mb-8">
           Break big tasks into small wins
         </p>
@@ -76,19 +78,6 @@ export function SignInPage() {
               className="w-full min-h-[44px] flex items-center justify-center bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan font-body text-sm rounded-xl border border-neon-cyan/30 transition-colors px-4 py-3 disabled:opacity-50"
             >
               {emailLoading ? '...' : 'Sign in with Email'}
-            </button>
-
-            <div className="flex items-center gap-3 my-2">
-              <div className="flex-1 h-px bg-base-700" />
-              <span className="text-gray-500 text-[10px] font-body">or</span>
-              <div className="flex-1 h-px bg-base-700" />
-            </div>
-
-            <button
-              onClick={() => handleOAuth('github')}
-              className="w-full min-h-[44px] flex items-center justify-center bg-base-700 hover:bg-base-600 text-white font-body text-sm rounded-xl border border-base-600 transition-colors px-4 py-3"
-            >
-              Sign in with GitHub
             </button>
           </div>
         )}
