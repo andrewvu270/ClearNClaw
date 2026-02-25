@@ -329,8 +329,8 @@ function FocusView({
       className="fixed inset-0 z-50 flex flex-col bg-base-900"
     >
       {/* Aurora background */}
-      <div className="absolute inset-0 pointer-events-none opacity-40">
-        <Aurora amplitude={0.8} speed={0.4} blend={0.6} />
+      <div className="absolute inset-0 pointer-events-none">
+        <Aurora colorStops={['#00e5ff', '#064e3b', '#ff1493']} amplitude={1.2} speed={0.8} blend={0.6} />
       </div>
 
       {/* Scrollable content — back button scrolls with content */}
@@ -374,7 +374,7 @@ function FocusView({
           </div>
 
           {/* Sub-tasks */}
-          <div className="space-y-1">
+          <div className="space-y-1 pl-4">
             {task.subTasks.map(st => (
               <SubTaskItem
                 key={st.id}
@@ -409,7 +409,7 @@ function AddSubTaskInput({ onAdd }: { onAdd: (name: string) => void }) {
   }
 
   return (
-    <div className="flex items-center gap-3 mt-4">
+    <div className="flex items-center gap-3 mt-4 pl-4">
       <div className="w-10 shrink-0" />
       <div className="flex-1 min-w-0">
         <input
