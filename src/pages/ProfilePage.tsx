@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
 import { EmptyState } from '../components/EmptyState'
+import DotGrid from '../components/DotGrid'
 import ElectricBorder from '../components/ElectricBorder'
 import { getProfile, getToyCollection } from '../services/profileService'
 // @ts-expect-error — toyCache is a JS module
@@ -79,8 +80,11 @@ export function ProfilePage() {
   }, [grouped])
 
   return (
-    <div className="min-h-screen bg-base-900 pb-20">
-      <div className="max-w-lg mx-auto px-4 pt-2">
+    <div className="min-h-screen bg-base-900 pb-20 relative">
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <DotGrid dotSize={6} gap={20} baseColor="#1a3a4a" activeColor="#22d3ee" proximity={100} shockRadius={200} shockStrength={3} returnDuration={1.2} />
+      </div>
+      <div className="max-w-lg mx-auto px-4 pt-2 relative z-10">
         <h1 className="text-neon-cyan text-xs text-center mb-2 font-pixel opacity-0 pointer-events-none">Profile</h1>
 
         {/* Stats */}

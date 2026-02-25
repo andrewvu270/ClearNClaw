@@ -8,6 +8,7 @@ import { SpotlightCard } from '../components/SpotlightCard'
 import { CircularProgressEmoji } from '../components/CircularProgressEmoji'
 import { SubTaskItem } from '../components/SubTaskItem'
 import { Aurora } from '../components/Aurora'
+import DotGrid from '../components/DotGrid'
 import { breakDownTask } from '../services/agentService'
 import * as taskService from '../services/taskService'
 import { getActiveTasks, getDoneTasks } from '../utils/filters'
@@ -120,7 +121,11 @@ export function TasksPage() {
   const displayed = tab === 'active' ? getActiveTasks(tasks) : getDoneTasks(tasks)
 
   return (
-    <div className="h-screen bg-base-900 flex flex-col">
+    <div className="h-screen bg-base-900 flex flex-col relative">
+      {/* Dot grid background */}
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <DotGrid dotSize={6} gap={20} baseColor="#1a3a4a" activeColor="#22d3ee" proximity={100} shockRadius={200} shockStrength={3} returnDuration={1.2} />
+      </div>
       {/* Fixed header */}
       <div className="shrink-0 max-w-lg mx-auto w-full px-4 pt-6">
         <h1 className="text-neon-cyan text-xs text-center mb-6 font-pixel opacity-0 pointer-events-none">Clear</h1>

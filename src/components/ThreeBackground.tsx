@@ -1,4 +1,4 @@
-import { useRef, useMemo } from 'react'
+import { useRef, useMemo, useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Float } from '@react-three/drei'
 import * as THREE from 'three'
@@ -121,7 +121,7 @@ function ShapeGeometry({ shape, color }: { shape: ShapeType; color: string }) {
   }
 }
 
-const items: { position: [number, number, number]; color: string; speed: number; shape: ShapeType }[] = [
+const desktopItems: { position: [number, number, number]; color: string; speed: number; shape: ShapeType }[] = [
   { position: [-3, 1.5, -4], color: '#ffe66d', speed: 0.8, shape: 'coin' },
   { position: [3.5, -1.5, -5], color: '#ff6b9d', speed: 1.0, shape: 'star' },
   { position: [-1.5, -2.5, -3.5], color: '#39ff14', speed: 1.2, shape: 'check' },
@@ -130,9 +130,28 @@ const items: { position: [number, number, number]; color: string; speed: number;
   { position: [-4, -1, -5], color: '#00e5ff', speed: 1.1, shape: 'pill' },
 ]
 
+const mobileItems: { position: [number, number, number]; color: string; speed: number; shape: ShapeType }[] = [
+  { position: [-1.8, 1.2, -2.5], color: '#ffe66d', speed: 0.8, shape: 'coin' },
+  { position: [2, -1.2, -3], color: '#ff6b9d', speed: 1.0, shape: 'star' },
+  { position: [-1, -2, -2], color: '#39ff14', speed: 1.2, shape: 'check' },
+  { position: [1, 2, -3.5], color: '#00e5ff', speed: 0.7, shape: 'bolt' },
+  { position: [2.2, 0.5, -2.5], color: '#ff6b9d', speed: 0.9, shape: 'knot' },
+  { position: [-2.2, -0.8, -3], color: '#00e5ff', speed: 1.1, shape: 'pill' },
+]
+
 export default function ThreeBackground() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
+
+  useEffect(() => {
+    const onResize = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  const items = isMobile ? mobileItems : desktopItems
+
   return (
-    <Canvas camera={{ position: [0, 0, 5], fov: 50 }}>
+    <Canvas camera={{ position: [0, 0, isMobile ? 4 : 5], fov: isMobile ? 55 : 50 }}>
       <ambientLight intensity={0.4} />
       <pointLight position={[5, 5, 5]} intensity={0.5} color="#00e5ff" />
       <pointLight position={[-5, -5, 3]} intensity={0.3} color="#ff6b9d" />

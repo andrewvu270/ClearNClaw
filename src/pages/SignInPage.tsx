@@ -44,7 +44,7 @@ export function SignInPage() {
         />
       </div>
       <Suspense fallback={null}>
-        <div className="absolute inset-0 -z-10 pointer-events-none hidden md:block">
+        <div className="absolute inset-0 -z-10 pointer-events-none">
           <ThreeBackground />
         </div>
       </Suspense>

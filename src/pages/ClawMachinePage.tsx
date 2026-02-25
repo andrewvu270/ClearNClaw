@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
+import DotGrid from '../components/DotGrid'
 import * as coinService from '../services/coinService'
 // @ts-expect-error — ClawMachine is a JSX component without types
 import ClawMachine from '../components/ClawMachine'
@@ -81,7 +82,10 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
   const canRefresh = !playing && coins !== null && coins >= 5
 
   return (
-    <div className="h-screen bg-base-900 flex flex-col pb-20">
+    <div className="h-screen bg-base-900 flex flex-col pb-20 relative">
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <DotGrid dotSize={6} gap={20} baseColor="#1a3a4a" activeColor="#22d3ee" proximity={100} shockRadius={200} shockStrength={3} returnDuration={1.2} />
+      </div>
       <div className="max-w-lg mx-auto px-4 pt-4 shrink-0 relative z-10">
         <h1 className="text-neon-cyan text-xs text-center mb-3 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
 
