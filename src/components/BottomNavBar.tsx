@@ -21,14 +21,6 @@ export function BottomNavBar() {
         boxShadow: '0 -12px 48px rgba(0, 229, 255, 0.05), 0 -4px 16px rgba(255, 107, 157, 0.03)',
       }}
     >
-      {/* Animated gradient border line */}
-      <div
-        className="absolute top-0 left-0 right-0 h-[1.5px]"
-        style={{
-          background: 'linear-gradient(90deg, transparent 5%, rgba(0,229,255,0.5) 25%, rgba(255,107,157,0.5) 50%, rgba(57,255,20,0.3) 75%, transparent 95%)',
-        }}
-      />
-
       {/* Subtle noise texture overlay */}
       <div
         className="absolute inset-0 opacity-[0.03] pointer-events-none"
@@ -38,14 +30,14 @@ export function BottomNavBar() {
         }}
       />
 
-      <div className="relative flex justify-around items-center max-w-lg mx-auto py-1">
+      <div className="relative flex justify-around items-center max-w-lg mx-auto">
         {tabs.map(tab => {
           const isActive = location.pathname === tab.path
           return (
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`relative flex flex-col items-center justify-center py-2 px-5 min-w-[48px] min-h-[48px] transition-all duration-300 ${
+              className={`relative flex flex-col items-center justify-center py-1 px-4 min-w-[40px] min-h-[40px] transition-all duration-300 ${
                 isActive
                   ? 'text-neon-cyan'
                   : 'text-gray-500 hover:text-gray-300'
@@ -66,7 +58,7 @@ export function BottomNavBar() {
               )}
 
               <span
-                className={`relative text-xl transition-transform duration-300 ${isActive ? 'scale-125' : 'scale-100 opacity-60'}`}
+                className={`relative text-xl transition-transform duration-300 ${isActive ? 'scale-150' : 'scale-100 opacity-60'}`}
                 role="img"
                 aria-hidden="true"
               >
