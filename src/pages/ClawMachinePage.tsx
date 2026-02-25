@@ -93,8 +93,8 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
       <div className="absolute inset-0 pointer-events-none">
         <DotGrid dotSize={6} gap={20} baseColor="#271E37" activeColor="#5227FF" proximity={150} shockRadius={250} shockStrength={4} returnDuration={1.0} />
       </div>
-      <div className="max-w-lg mx-auto px-4 pt-2 shrink-0 relative z-10">
-        <h1 className="text-neon-cyan text-xs text-center mb-1 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
+      <div className="max-w-lg mx-auto px-4 pt-6 shrink-0 relative z-10">
+        <h1 className="text-neon-cyan text-xs text-center mb-2 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
 
         <div className="flex items-center justify-center gap-3 mb-2">
           <div className="flex items-center gap-2">
@@ -132,7 +132,7 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
         )}
       </div>
 
-      <div className="flex-1 min-h-0 max-w-lg mx-auto w-full flex items-center justify-center -mt-24 sm:-mt-16">
+      <div className="flex-1 min-h-0 max-w-lg mx-auto w-full flex items-center justify-center -mt-16 sm:-mt-8">
         <ClawMachine key={seed} playable={playing} onTurnEnd={handleTurnEnd} userId={userId} active={active} seed={seed} />
       </div>
 

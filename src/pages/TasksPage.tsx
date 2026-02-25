@@ -141,7 +141,7 @@ export function TasksPage() {
         <DotGrid dotSize={6} gap={20} baseColor="#271E37" activeColor="#5227FF" proximity={150} shockRadius={250} shockStrength={4} returnDuration={1.0} />
       </div>
       {/* Fixed header */}
-      <div className="shrink-0 max-w-lg mx-auto w-full px-4 pt-6">
+      <div className="shrink-0 max-w-lg mx-auto w-full px-4 pt-6 relative z-10">
         <h1 className="text-neon-cyan text-xs text-center mb-6 font-pixel opacity-0 pointer-events-none">Clear</h1>
         <TaskInputForm onSubmit={handleSubmit} loading={loading} />
         <div className="relative flex gap-8 mt-6 mb-2 justify-center">
@@ -167,7 +167,7 @@ export function TasksPage() {
       </div>
 
       {/* Scrollable task stack */}
-      <div className="flex-1 min-h-0">
+      <div className="flex-1 min-h-0 relative z-10">
         <div className="h-full">
             {displayed.length === 0 ? (
               <div className="max-w-lg mx-auto px-4">
