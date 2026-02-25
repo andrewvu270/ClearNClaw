@@ -168,6 +168,12 @@ export function TasksPage() {
                 {displayed.map(task => {
                   const progress = calculateProgress(task.subTasks)
                   const doneCount = task.subTasks.filter(st => st.completed).length
+                  // Progress-based gradient tint
+                  const gradientBg = progress < 0.3
+                    ? 'bg-gradient-to-br from-neon-pink/5 to-transparent'
+                    : progress < 0.7
+                      ? 'bg-gradient-to-br from-neon-yellow/5 to-transparent'
+                      : 'bg-gradient-to-br from-neon-cyan/5 to-transparent'
                   return (
                     <motion.div
                       key={task.id}
@@ -178,7 +184,7 @@ export function TasksPage() {
                       transition={{ duration: 0.2 }}
                     >
                       <SpotlightCard
-                        className="py-8 px-6 cursor-pointer relative group"
+                        className={`py-8 px-6 cursor-pointer relative group ${gradientBg}`}
                         spotlightColor="rgba(0, 229, 255, 0.12)"
                       >
                         <button
@@ -188,6 +194,13 @@ export function TasksPage() {
                         >
                           ×
                         </button>
+                        {/* Coin reward preview on active cards */}
+                        {!task.completed && (
+                          <div className="absolute top-3 left-3 flex items-center gap-1 opacity-60">
+                            <span className="text-sm">🪙</span>
+                            <span className="text-neon-yellow font-pixel text-[9px]">+1</span>
+                          </div>
+                        )}
                         <div
                           role="button"
                           tabIndex={0}
@@ -322,7 +335,7 @@ function FocusView({
           {/* Editable name */}
           <div className="text-center mb-2">
             {readOnly ? (
-              <p className="text-white font-body text-lg">{task.name}</p>
+              <p className="text-white font-body text-xl">{task.name}</p>
             ) : (
               <EditableTaskName
                 name={task.name}
@@ -331,13 +344,13 @@ function FocusView({
             )}
           </div>
 
-          <p className="text-gray-500 text-xs text-center mb-6">
+          <p className="text-gray-400 text-xs text-center mb-6">
             {doneCount}/{task.subTasks.length} done
           </p>
 
           {/* Big emoji + progress ring */}
           <div className="flex justify-center mb-8">
-            <CircularProgressEmoji emoji={task.emoji} progress={progress} size={140} />
+            <CircularProgressEmoji emoji={task.emoji} progress={progress} size={180} />
           </div>
 
           {/* Sub-tasks */}
@@ -383,7 +396,7 @@ function AddSubTaskInput({ onAdd }: { onAdd: (name: string) => void }) {
           onChange={e => setValue(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter') handleAdd() }}
           placeholder="Add a sub-task..."
-          className="w-full bg-transparent text-white text-xs px-0 py-2 border-b border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
+          className="w-full bg-transparent text-white text-sm px-0 py-2 border-b border-base-700 outline-none focus:border-neon-cyan/50 placeholder-gray-600"
         />
       </div>
       <button
@@ -418,7 +431,7 @@ function EditableTaskName({ name, onSave }: { name: string; onSave: (name: strin
         onChange={e => setValue(e.target.value)}
         onBlur={handleSave}
         onKeyDown={e => { if (e.key === 'Enter') handleSave(); if (e.key === 'Escape') { setValue(name); setEditing(false) } }}
-        className="w-full bg-transparent text-white text-lg text-center px-1 py-1 border-b border-neon-cyan/30 outline-none focus:border-neon-cyan font-body"
+        className="w-full bg-transparent text-white text-xl text-center px-1 py-1 border-b border-neon-cyan/30 outline-none focus:border-neon-cyan font-body"
         autoFocus
       />
     )
@@ -427,7 +440,7 @@ function EditableTaskName({ name, onSave }: { name: string; onSave: (name: strin
   return (
     <button
       onClick={() => setEditing(true)}
-      className="text-white font-body text-lg hover:text-neon-cyan transition-colors cursor-text"
+      className="text-white font-body text-xl hover:text-neon-cyan transition-colors cursor-text"
     >
       {name}
     </button>
