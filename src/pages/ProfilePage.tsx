@@ -114,15 +114,15 @@ export function ProfilePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
-        <div className="flex items-center justify-center gap-8 mb-6">
-          <div className="p-4 text-center">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <div className="p-2 text-center min-w-[70px]">
             <p className="text-3xl mb-1">✅</p>
             <p className="font-pixel text-neon-green text-sm">
               {profile?.completedTasks ?? '...'}
             </p>
             <p className="text-gray-400 text-xs font-body mt-1">Tasks Done</p>
           </div>
-          <div className="p-4 text-center">
+          <div className="p-2 text-center min-w-[70px]">
             <p className="text-3xl mb-1">🪙</p>
             <p className="font-pixel text-neon-yellow text-sm">
               {profile?.coins ?? '...'}
@@ -131,7 +131,7 @@ export function ProfilePage() {
           </div>
           <button
             onClick={toggle}
-            className="p-4 text-center hover:bg-base-800 rounded-xl transition-colors"
+            className="p-2 text-center hover:bg-base-800 rounded-xl transition-colors min-w-[70px]"
             aria-label="Toggle Low Stimulation Mode"
           >
             <p className="text-3xl mb-1">🎚️</p>
@@ -142,11 +142,11 @@ export function ProfilePage() {
           </button>
           <button
             onClick={handleLogout}
-            className="p-4 text-center hover:bg-base-800 rounded-xl transition-colors"
+            className="p-2 text-center hover:bg-base-800 rounded-xl transition-colors min-w-[70px]"
             aria-label="Logout"
           >
             <p className="text-3xl mb-1">🚪</p>
-            <p className="font-pixel text-red-500 text-sm">✕</p>
+            <p className="font-pixel text-red-500 text-sm">X</p>
             <p className="text-gray-400 text-xs font-body mt-1">Logout</p>
           </button>
         </div>
