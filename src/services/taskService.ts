@@ -19,6 +19,7 @@ function mapSubTask(row: Record<string, unknown>): SubTask {
     id: row.id as string,
     bigTaskId: row.big_task_id as string,
     name: row.name as string,
+    emoji: (row.emoji as string) || '▪️',
     completed: row.completed as boolean,
     sortOrder: row.sort_order as number,
   }
@@ -28,7 +29,7 @@ export async function createBigTask(
   userId: string,
   description: string,
   emoji: string,
-  subTaskNames: string[]
+  subTaskItems: { name: string; emoji: string }[]
 ): Promise<BigTask> {
   const { data: taskRow, error: taskError } = await supabase
     .from('big_tasks')
@@ -38,9 +39,10 @@ export async function createBigTask(
 
   if (taskError || !taskRow) throw taskError ?? new Error('Failed to create big task')
 
-  const subTaskInserts = subTaskNames.map((name, i) => ({
+  const subTaskInserts = subTaskItems.map((st, i) => ({
     big_task_id: taskRow.id,
-    name,
+    name: st.name,
+    emoji: st.emoji,
     sort_order: i,
   }))
 
@@ -76,6 +78,15 @@ export async function updateBigTaskName(taskId: string, name: string): Promise<v
   const { error } = await supabase
     .from('big_tasks')
     .update({ name })
+    .eq('id', taskId)
+
+  if (error) throw error
+}
+
+export async function updateBigTaskEmoji(taskId: string, emoji: string): Promise<void> {
+  const { error } = await supabase
+    .from('big_tasks')
+    .update({ emoji })
     .eq('id', taskId)
 
   if (error) throw error
@@ -121,6 +132,15 @@ export async function updateSubTaskName(subTaskId: string, name: string): Promis
   if (error) throw error
 }
 
+export async function updateSubTaskEmoji(subTaskId: string, emoji: string): Promise<void> {
+  const { error } = await supabase
+    .from('sub_tasks')
+    .update({ emoji })
+    .eq('id', subTaskId)
+
+  if (error) throw error
+}
+
 export async function deleteSubTask(subTaskId: string): Promise<void> {
   const { error } = await supabase
     .from('sub_tasks')
@@ -143,7 +163,7 @@ export async function addSubTask(bigTaskId: string, name: string): Promise<SubTa
 
   const { data, error } = await supabase
     .from('sub_tasks')
-    .insert({ big_task_id: bigTaskId, name, sort_order: nextOrder })
+    .insert({ big_task_id: bigTaskId, name, emoji: '▪️', sort_order: nextOrder })
     .select()
     .single()
 

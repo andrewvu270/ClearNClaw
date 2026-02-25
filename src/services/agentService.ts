@@ -1,6 +1,6 @@
 export interface AgentResponse {
   emoji: string
-  subTasks: string[]
+  subTasks: { name: string; emoji: string }[]
 }
 
 const AGENT_TIMEOUT_MS = 10_000
@@ -56,10 +56,16 @@ export async function breakDownTask(description: string): Promise<AgentResponse>
     const parsed = JSON.parse(jsonMatch[0])
 
     // Agent uses "subtasks" (lowercase), we normalize to "subTasks"
-    const subTasks: string[] = parsed.subtasks ?? parsed.subTasks
-    if (!parsed.emoji || !Array.isArray(subTasks)) {
+    const rawSubTasks = parsed.subtasks ?? parsed.subTasks
+    if (!parsed.emoji || !Array.isArray(rawSubTasks)) {
       throw new Error('Malformed agent response')
     }
+
+    // Normalize: agent may return strings or {name, emoji} objects
+    const subTasks = rawSubTasks.map((st: string | { name: string; emoji: string }) => {
+      if (typeof st === 'string') return { name: st, emoji: '▪️' }
+      return { name: st.name, emoji: st.emoji || '▪️' }
+    })
 
     return { emoji: parsed.emoji, subTasks }
   } catch (error) {
