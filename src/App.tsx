@@ -1,10 +1,9 @@
 import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
-import { AnimatePresence } from 'framer-motion'
 import { supabase } from './lib/supabase'
 import { ensureProfile } from './services/profileService'
 import { ProtectedRoute } from './components/ProtectedRoute'
-import { PageTransition } from './components/PageTransition'
+import { LandingPage } from './pages/LandingPage'
 import { SignInPage } from './pages/SignInPage'
 import { TasksPage } from './pages/TasksPage'
 import { ClawMachinePage } from './pages/ClawMachinePage'
@@ -19,52 +18,49 @@ function AuthListener() {
         ensureProfile(session.user.id).catch(console.error)
         navigate('/tasks', { replace: true })
       }
-
       if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
-        navigate('/sign-in', { replace: true })
+        navigate('/', { replace: true })
       }
     })
-
     return () => subscription.unsubscribe()
   }, [navigate])
 
   return null
 }
 
-function AnimatedRoutes() {
+function AppRoutes() {
   const location = useLocation()
+  const isClawPage = location.pathname === '/claw-machine'
 
   return (
-    <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/sign-in" element={<PageTransition><SignInPage /></PageTransition>} />
-        <Route
-          path="/tasks"
-          element={
-            <ProtectedRoute>
-              <PageTransition><TasksPage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/claw-machine"
-          element={
-            <ProtectedRoute>
-              <PageTransition><ClawMachinePage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <PageTransition><ProfilePage /></PageTransition>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/tasks" replace />} />
-      </Routes>
-    </AnimatePresence>
+    <>
+      {/* Claw machine stays mounted, hidden when not on its route */}
+      <div
+        style={{
+          visibility: isClawPage ? 'visible' : 'hidden',
+          position: isClawPage ? 'relative' : 'fixed',
+          top: isClawPage ? undefined : 0,
+          left: isClawPage ? undefined : 0,
+          width: isClawPage ? undefined : '100%',
+          height: isClawPage ? undefined : '100%',
+          pointerEvents: isClawPage ? 'auto' : 'none',
+          zIndex: isClawPage ? undefined : -1,
+        }}
+      >
+        <ProtectedRoute><ClawMachinePage active={isClawPage} /></ProtectedRoute>
+      </div>
+
+      {/* Other routes mount/unmount normally */}
+      {!isClawPage && (
+        <Routes location={location}>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      )}
+    </>
   )
 }
 
@@ -72,7 +68,7 @@ function App() {
   return (
     <BrowserRouter>
       <AuthListener />
-      <AnimatedRoutes />
+      <AppRoutes />
     </BrowserRouter>
   )
 }
