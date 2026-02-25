@@ -32,6 +32,14 @@ export function ProfilePage() {
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
   const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string; isRare?: boolean; isElectric?: boolean; group?: string } | null>(null)
 
+  // Lock body scroll when popup is open
+  useEffect(() => {
+    if (selectedToy) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [selectedToy])
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
@@ -226,23 +234,19 @@ export function ProfilePage() {
               transition={{ type: 'spring', damping: 25, stiffness: 350 }}
               onClick={e => e.stopPropagation()}
             >
-              {selectedToy.isRare ? (
-                <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+              <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={8} scaleOnHover={1.03}>
+                {selectedToy.isRare ? (
                   <ElectricBorder borderRadius={16} color="#7df9ff" speed={1} chaos={0.03}>
                     <ToyPopupContent toy={selectedToy} />
                   </ElectricBorder>
-                </TiltedCard>
-              ) : selectedToy.isElectric ? (
-                <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+                ) : selectedToy.isElectric ? (
                   <div className="rounded-2xl p-[2px]" style={{ background: 'linear-gradient(135deg, #00e5ff, #7c3aed, #ec4899, #00e5ff)' }}>
                     <ToyPopupContent toy={selectedToy} />
                   </div>
-                </TiltedCard>
-              ) : (
-                <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={14} scaleOnHover={1.03}>
+                ) : (
                   <ToyPopupContent toy={selectedToy} />
-                </TiltedCard>
-              )}
+                )}
+              </TiltedCard>
             </motion.div>
           </motion.div>
         )}
@@ -308,26 +312,30 @@ function ToyCard({
 function ToyPopupContent({ toy }: { toy: { name: string; count: number; sprite?: string; group?: string } }) {
   return (
     <div className="relative bg-base-800 border border-base-700 rounded-2xl p-8 max-w-sm w-full text-center" style={{ transformStyle: 'preserve-3d' }}>
+      {/* Holographic shimmer overlay */}
       <div
         className="absolute inset-0 rounded-2xl pointer-events-none"
         style={{
-          transform: 'translateZ(2px)',
-          background: `radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(0,229,255,0.15) 0%, rgba(168,85,247,0.12) 25%, rgba(236,72,153,0.1) 50%, rgba(34,211,238,0.08) 75%, transparent 100%)`,
+          transform: 'translateZ(4px)',
+          background: `radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(0,229,255,0.18) 0%, rgba(168,85,247,0.14) 25%, rgba(236,72,153,0.12) 50%, rgba(34,211,238,0.08) 75%, transparent 100%)`,
         }}
       />
+      {/* Sprite — highest depth */}
       {toy.sprite ? (
         <img
           src={toy.sprite}
           alt={toy.name}
-          className="w-40 h-40 object-contain mx-auto mb-5"
-          style={{ transform: 'translateZ(80px)' }}
+          className="w-40 h-40 object-contain mx-auto mb-5 drop-shadow-[0_0_20px_rgba(0,229,255,0.3)]"
+          style={{ transform: 'translateZ(100px)' }}
         />
       ) : (
-        <div className="w-40 h-40 bg-base-700 rounded-xl mx-auto mb-5 flex items-center justify-center text-6xl" style={{ transform: 'translateZ(80px)' }}>🧸</div>
+        <div className="w-40 h-40 bg-base-700 rounded-xl mx-auto mb-5 flex items-center justify-center text-6xl" style={{ transform: 'translateZ(100px)' }}>🧸</div>
       )}
-      <p className="text-white font-body text-base mb-1" style={{ transform: 'translateZ(50px)' }}>{toy.name}</p>
-      <p className="text-neon-cyan font-pixel text-sm mb-2" style={{ transform: 'translateZ(50px)' }}>×{toy.count} collected</p>
-      <p className="text-neon-pink/70 font-pixel text-[10px] uppercase tracking-wider" style={{ transform: 'translateZ(35px)' }}>{toy.group || 'Other'}</p>
+      {/* Name + count — mid depth */}
+      <p className="text-white font-body text-base mb-1" style={{ transform: 'translateZ(60px)' }}>{toy.name}</p>
+      <p className="text-neon-cyan font-pixel text-sm mb-2" style={{ transform: 'translateZ(60px)' }}>×{toy.count} collected</p>
+      {/* Group — lower depth */}
+      <p className="text-neon-pink/70 font-pixel text-[10px] uppercase tracking-wider" style={{ transform: 'translateZ(40px)' }}>{toy.group || 'Other'}</p>
     </div>
   )
 }

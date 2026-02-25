@@ -9,7 +9,6 @@ import { CircularProgressEmoji } from '../components/CircularProgressEmoji'
 import { SubTaskItem } from '../components/SubTaskItem'
 import { Aurora } from '../components/Aurora'
 import DotGrid from '../components/DotGrid'
-import TiltedCard from '../components/TiltedCard'
 import { breakDownTask } from '../services/agentService'
 import * as taskService from '../services/taskService'
 import { getActiveTasks, getDoneTasks } from '../utils/filters'
@@ -200,33 +199,29 @@ export function TasksPage() {
                       >
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(task.id) }}
-                          className="absolute top-3 right-3 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-600 hover:text-neon-pink transition-colors z-10"
+                          className="absolute top-3 right-3 min-w-[36px] min-h-[36px] flex items-center justify-center text-gray-600 hover:text-neon-pink transition-colors"
                           aria-label="Delete task"
                         >
                           ×
                         </button>
+                        {/* Coin reward preview on active cards */}
                         {!task.completed && (
-                          <div className="absolute top-3 left-3 flex items-center gap-1 opacity-60 z-10">
+                          <div className="absolute top-3 left-3 flex items-center gap-1 opacity-60">
                             <span className="text-sm">🪙</span>
                             <span className="text-neon-yellow font-pixel text-[9px]">+1</span>
                           </div>
                         )}
-                        <TiltedCard containerHeight="auto" containerWidth="100%" rotateAmplitude={8} scaleOnHover={1.02}>
-                          <div
-                            role="button"
-                            tabIndex={0}
-                            onClick={() => setFocusedTask(task)}
-                            onKeyDown={e => { if (e.key === 'Enter') setFocusedTask(task) }}
-                            className="flex flex-col items-center"
-                            style={{ transformStyle: 'preserve-3d' }}
-                          >
-                            <p className="text-white font-body text-lg mb-1" style={{ transform: 'translateZ(20px)' }}>{task.name}</p>
-                            <p className="text-gray-500 text-xs mb-6" style={{ transform: 'translateZ(15px)' }}>{doneCount}/{task.subTasks.length} done</p>
-                            <div style={{ transform: 'translateZ(35px)' }}>
-                              <CircularProgressEmoji emoji={task.emoji} progress={progress} size={150} />
-                            </div>
-                          </div>
-                        </TiltedCard>
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() => setFocusedTask(task)}
+                          onKeyDown={e => { if (e.key === 'Enter') setFocusedTask(task) }}
+                          className="flex flex-col items-center"
+                        >
+                          <p className="text-white font-body text-lg mb-1">{task.name}</p>
+                          <p className="text-gray-500 text-xs mb-6">{doneCount}/{task.subTasks.length} done</p>
+                          <CircularProgressEmoji emoji={task.emoji} progress={progress} size={150} />
+                        </div>
                       </SpotlightCard>
                     </motion.div>
                   )

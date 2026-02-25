@@ -1,7 +1,7 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useCallback } from 'react'
 import { motion, useMotionValue, useSpring } from 'framer-motion'
 
-const springValues = { damping: 30, stiffness: 100, mass: 2 }
+const springValues = { damping: 30, stiffness: 150, mass: 1 }
 
 interface TiltedCardProps {
   children: React.ReactNode
@@ -18,61 +18,36 @@ export default function TiltedCard({
   scaleOnHover = 1.05,
   rotateAmplitude = 12,
 }: TiltedCardProps) {
-  const ref = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
   const rotateX = useSpring(useMotionValue(0), springValues)
   const rotateY = useSpring(useMotionValue(0), springValues)
   const scale = useSpring(1, springValues)
   const [pointerPos, setPointerPos] = useState({ x: 50, y: 50 })
 
-  function updatePointer(clientX: number, clientY: number) {
-    if (!ref.current) return
-    const rect = ref.current.getBoundingClientRect()
-    const x = ((clientX - rect.left) / rect.width) * 100
-    const y = ((clientY - rect.top) / rect.height) * 100
-    setPointerPos({ x, y })
-  }
+  const applyTilt = useCallback((clientX: number, clientY: number) => {
+    if (!innerRef.current) return
+    const rect = innerRef.current.getBoundingClientRect()
+    const offsetX = clientX - rect.left - rect.width / 2
+    const offsetY = clientY - rect.top - rect.height / 2
+    // Normalize to -1..1 range, clamp it
+    const nx = Math.max(-1, Math.min(1, offsetX / (rect.width / 2)))
+    const ny = Math.max(-1, Math.min(1, offsetY / (rect.height / 2)))
+    rotateX.set(ny * -rotateAmplitude)
+    rotateY.set(nx * rotateAmplitude)
+    const px = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100))
+    const py = Math.max(0, Math.min(100, ((clientY - rect.top) / rect.height) * 100))
+    setPointerPos({ x: px, y: py })
+  }, [rotateAmplitude, rotateX, rotateY])
 
-  function handleMouse(e: React.MouseEvent) {
-    if (!ref.current) return
-    const rect = ref.current.getBoundingClientRect()
-    const offsetX = e.clientX - rect.left - rect.width / 2
-    const offsetY = e.clientY - rect.top - rect.height / 2
-    rotateX.set((offsetY / (rect.height / 2)) * -rotateAmplitude)
-    rotateY.set((offsetX / (rect.width / 2)) * rotateAmplitude)
-    updatePointer(e.clientX, e.clientY)
-  }
-
-  function handleMouseEnter() {
-    scale.set(scaleOnHover)
-  }
-
-  function handleMouseLeave() {
+  const resetTilt = useCallback(() => {
     scale.set(1)
     rotateX.set(0)
     rotateY.set(0)
     setPointerPos({ x: 50, y: 50 })
-  }
-
-  function handleTouch(e: React.TouchEvent) {
-    if (!ref.current || !e.touches[0]) return
-    const rect = ref.current.getBoundingClientRect()
-    const offsetX = e.touches[0].clientX - rect.left - rect.width / 2
-    const offsetY = e.touches[0].clientY - rect.top - rect.height / 2
-    rotateX.set((offsetY / (rect.height / 2)) * -rotateAmplitude)
-    rotateY.set((offsetX / (rect.width / 2)) * rotateAmplitude)
-    updatePointer(e.touches[0].clientX, e.touches[0].clientY)
-  }
-
-  function handleTouchEnd() {
-    scale.set(1)
-    rotateX.set(0)
-    rotateY.set(0)
-    setPointerPos({ x: 50, y: 50 })
-  }
+  }, [scale, rotateX, rotateY])
 
   return (
     <div
-      ref={ref}
       style={{
         height: containerHeight,
         width: containerWidth,
@@ -82,14 +57,31 @@ export default function TiltedCard({
         '--pointer-y': `${pointerPos.y}%`,
       }}
       className="flex items-center justify-center"
-      onMouseMove={handleMouse}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onTouchMove={handleTouch}
-      onTouchEnd={handleTouchEnd}
+      onMouseMove={e => applyTilt(e.clientX, e.clientY)}
+      onMouseEnter={() => scale.set(scaleOnHover)}
+      onMouseLeave={resetTilt}
     >
       <motion.div
+        ref={innerRef}
         style={{ rotateX, rotateY, scale, transformStyle: 'preserve-3d' }}
+        className="touch-none"
+        onTouchStart={e => {
+          e.stopPropagation()
+          e.preventDefault()
+          if (!e.touches[0]) return
+          scale.set(scaleOnHover)
+          applyTilt(e.touches[0].clientX, e.touches[0].clientY)
+        }}
+        onTouchMove={e => {
+          e.stopPropagation()
+          e.preventDefault()
+          if (!e.touches[0]) return
+          applyTilt(e.touches[0].clientX, e.touches[0].clientY)
+        }}
+        onTouchEnd={e => {
+          e.stopPropagation()
+          resetTilt()
+        }}
       >
         {children}
       </motion.div>
