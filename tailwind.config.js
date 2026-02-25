@@ -8,16 +8,16 @@ export default {
     extend: {
       colors: {
         base: {
-          900: '#0a1628',
-          800: '#0f2035',
+          900: 'var(--color-base-900, #0a1628)',
+          800: 'var(--color-base-800, #0f2035)',
           700: '#153045',
           600: '#1a3f55',
         },
         neon: {
-          pink: '#ff6b9d',
-          cyan: '#00e5ff',
-          green: '#39ff14',
-          yellow: '#ffe66d',
+          pink: 'var(--color-neon-pink, #ff6b9d)',
+          cyan: 'var(--color-neon-cyan, #00e5ff)',
+          green: 'var(--color-neon-green, #39ff14)',
+          yellow: 'var(--color-neon-yellow, #ffe66d)',
         },
       },
       fontFamily: {

@@ -8,6 +8,7 @@ import DotGrid from '../components/DotGrid'
 import ElectricBorder from '../components/ElectricBorder'
 import TiltedCard from '../components/TiltedCard'
 import { getProfile, getToyCollection } from '../services/profileService'
+import { useStimMode } from '../contexts/StimModeContext'
 // @ts-expect-error — toyCache is a JS module
 import { getCachedToys } from '../utils/toyCache'
 import type { UserProfile, UserToy } from '../types'
@@ -27,6 +28,7 @@ interface ToyInfo {
 
 export function ProfilePage() {
   const navigate = useNavigate()
+  const { isLowStim, toggle } = useStimMode()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [toys, setToys] = useState<UserToy[]>([])
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
@@ -112,6 +114,29 @@ export function ProfilePage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
+        {/* Low Stim Mode Toggle */}
+        <div className="mb-6 p-4 bg-base-800 rounded-xl border border-base-700">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-white text-sm font-body mb-1">Low Stimulation Mode</p>
+              <p className="text-gray-400 text-xs font-body">Reduces animations and calms colors</p>
+            </div>
+            <button
+              onClick={toggle}
+              className={`relative w-14 h-8 rounded-full transition-colors ${
+                isLowStim ? 'bg-neon-cyan' : 'bg-base-700'
+              }`}
+              aria-label="Toggle Low Stimulation Mode"
+            >
+              <span
+                className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform ${
+                  isLowStim ? 'translate-x-6' : 'translate-x-0'
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-center gap-8 mb-6">
           <div className="p-4 text-center">
             <p className="text-3xl mb-1">✅</p>

@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useMemo } from 'react'
 import { gsap } from 'gsap'
 import { InertiaPlugin } from 'gsap/InertiaPlugin'
+import { useStimMode } from '../contexts/StimModeContext'
 import './DotGrid.css'
 
 gsap.registerPlugin(InertiaPlugin)
@@ -61,6 +62,7 @@ export default function DotGrid({
   className = '',
   style,
 }: DotGridProps) {
+  const { isLowStim } = useStimMode()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const dotsRef = useRef<Dot[]>([])
@@ -108,7 +110,7 @@ export default function DotGrid({
 
   // Draw loop
   useEffect(() => {
-    if (!circlePath) return
+    if (!circlePath || isLowStim) return
     let rafId: number
     const proxSq = proximity * proximity
 
@@ -147,15 +149,16 @@ export default function DotGrid({
     }
     draw()
     return () => cancelAnimationFrame(rafId)
-  }, [proximity, baseColor, activeRgb, baseRgb, circlePath])
+  }, [proximity, baseColor, activeRgb, baseRgb, circlePath, isLowStim])
 
   // Resize
   useEffect(() => {
+    if (isLowStim) return
     buildGrid()
     const ro = new ResizeObserver(buildGrid)
     if (wrapperRef.current) ro.observe(wrapperRef.current)
     return () => ro.disconnect()
-  }, [buildGrid])
+  }, [buildGrid, isLowStim])
 
   // Mouse + click interactions
   useEffect(() => {
@@ -247,6 +250,10 @@ export default function DotGrid({
       window.removeEventListener('click', onClick)
     }
   }, [maxSpeed, speedTrigger, proximity, resistance, returnDuration, shockRadius, shockStrength])
+
+  if (isLowStim) {
+    return null
+  }
 
   return (
     <section className={`dot-grid ${className}`} style={style}>

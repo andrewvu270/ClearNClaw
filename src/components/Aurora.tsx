@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl'
+import { useStimMode } from '../contexts/StimModeContext'
 
 const VERT = `#version 300 es
 in vec2 position;
@@ -99,11 +100,13 @@ export function Aurora({
   speed = 1.0,
   className = '',
 }: AuroraProps) {
+  const { isLowStim } = useStimMode()
   const ctnRef = useRef<HTMLDivElement>(null)
   const propsRef = useRef({ colorStops, amplitude, blend, speed })
   propsRef.current = { colorStops, amplitude, blend, speed }
 
   useEffect(() => {
+    if (isLowStim) return
     const ctn = ctnRef.current
     if (!ctn) return
 
@@ -172,7 +175,11 @@ export function Aurora({
       if (ctn && gl.canvas.parentNode === ctn) ctn.removeChild(gl.canvas)
       gl.getExtension('WEBGL_lose_context')?.loseContext()
     }
-  }, [amplitude])
+  }, [amplitude, isLowStim])
+
+  if (isLowStim) {
+    return null
+  }
 
   return <div ref={ctnRef} className={`w-full h-full ${className}`} />
 }

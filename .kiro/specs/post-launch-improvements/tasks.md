@@ -74,7 +74,9 @@
 
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 3. Low Stimulation Mode
+- [x] 3. Low Stimulation Mode
+
+
 
 
   - [x] 3.1 Add `low_stim_mode` column to `profiles` table via Supabase migration
@@ -90,17 +92,26 @@
     - Toggle adds/removes `low-stim` class on `document.documentElement`
     - Persist changes to Supabase `profiles.low_stim_mode`
     - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
-  - [ ] 3.3 Write property test for Low Stimulation Mode round-trip (Property 3)
+  - [x] 3.3 Write property test for Low Stimulation Mode round-trip (Property 3)
+
 
 
     - **Property 3: Low Stimulation Mode round-trip**
     - **Validates: Requirements 2.4**
-  - [ ] 3.4 Add Low Stim CSS custom properties to `src/index.css`
+  - [x] 3.4 Add Low Stim CSS custom properties to `src/index.css`
+
+
     - Define `:root.low-stim` overrides for neon colors → muted pastels, transition-duration → 0
     - _Requirements: 2.2, 2.3_
+
+
   - [ ] 3.5 Update animated background components to respect `StimModeContext`
     - Aurora, DotGrid, ThreeBackground: render nothing when `isLowStim` is true
+
+
     - BottomNavBar, TaskCard, etc.: colors automatically update via CSS variables
+
+
     - _Requirements: 2.1, 2.4_
   - [ ] 3.6 Add Low Stim Mode toggle to `ProfilePage`
     - Toggle switch with label, uses `StimModeContext.toggle()`

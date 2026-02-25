@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Normal mode (default) */
+:root {
+  --color-neon-cyan: #00e5ff;
+  --color-neon-pink: #ff6b9d;
+  --color-neon-yellow: #ffe66d;
+  --color-neon-green: #39ff14;
+  --color-base-900: #0a1628;
+  --color-base-800: #0f2035;
+  --transition-duration: 1;
+}
+
+/* Low stimulation mode */
+:root.low-stim {
+  --color-neon-cyan: #7ec8c8;
+  --color-neon-pink: #c4a0b0;
+  --color-neon-yellow: #c8b87a;
+  --color-neon-green: #8ab88a;
+  --color-base-900: #1a1a2e;
+  --color-base-800: #222240;
+  --transition-duration: 0;
+}
+
 body {
   @apply bg-base-900 text-white font-body;
   margin: 0;

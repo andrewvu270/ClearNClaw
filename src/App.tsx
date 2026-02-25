@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from './lib/supabase'
 import { ensureProfile } from './services/profileService'
+import { StimModeProvider } from './contexts/StimModeContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { LandingPage } from './pages/LandingPage'
 import { SignInPage } from './pages/SignInPage'
@@ -82,8 +83,10 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <AuthListener />
-      <AppRoutes />
+      <StimModeProvider>
+        <AuthListener />
+        <AppRoutes />
+      </StimModeProvider>
     </BrowserRouter>
   )
 }

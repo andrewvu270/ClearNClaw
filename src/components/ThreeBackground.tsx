@@ -2,6 +2,7 @@ import { useRef, useMemo, useState, useEffect } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { Float } from '@react-three/drei'
 import * as THREE from 'three'
+import { useStimMode } from '../contexts/StimModeContext'
 
 type ShapeType = 'coin' | 'star' | 'pill' | 'bolt' | 'knot' | 'check'
 
@@ -140,6 +141,7 @@ const mobileItems: { position: [number, number, number]; color: string; speed: n
 ]
 
 export default function ThreeBackground() {
+  const { isLowStim } = useStimMode()
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768)
 
   useEffect(() => {
@@ -147,6 +149,10 @@ export default function ThreeBackground() {
     window.addEventListener('resize', onResize)
     return () => window.removeEventListener('resize', onResize)
   }, [])
+
+  if (isLowStim) {
+    return null
+  }
 
   const items = isMobile ? mobileItems : desktopItems
 
