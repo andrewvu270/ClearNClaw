@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from
 import { supabase } from './lib/supabase'
 import { ensureProfile } from './services/profileService'
 import { StimModeProvider } from './contexts/StimModeContext'
+import { FocusTimerProvider } from './contexts/FocusTimerContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { LandingPage } from './pages/LandingPage'
 import { SignInPage } from './pages/SignInPage'
@@ -84,8 +85,10 @@ function App() {
   return (
     <BrowserRouter>
       <StimModeProvider>
-        <AuthListener />
-        <AppRoutes />
+        <FocusTimerProvider>
+          <AuthListener />
+          <AppRoutes />
+        </FocusTimerProvider>
       </StimModeProvider>
     </BrowserRouter>
   )

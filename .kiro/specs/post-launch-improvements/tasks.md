@@ -147,45 +147,69 @@
 
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 6. Focus Timer and Pomodoro Mode
-  - [ ] 6.1 Create focus timer utility functions (`src/utils/focusTimer.ts`)
+- [x] 6. Focus Timer and Pomodoro Mode
+
+
+
+
+  - [x] 6.1 Create focus timer utility functions (`src/utils/focusTimer.ts`)
+
+
     - Implement `createTimerState`, `getRemainingMs`, `isTimerExpired`, `pauseTimer`, `resumeTimer`, `restartTimer`
     - Implement `getBreakDuration(pomodoroCount)` — 5 min normally, 15 min after every 4 intervals
     - Implement `getNextIncompleteSubTask(subTasks)` — returns first incomplete by sort order
     - All timer logic uses `Date.now()` wall-clock for background resilience
     - _Requirements: 4.3, 4.6, 4.7, 4.8, 4.10, 4.13, 4.14_
-  - [ ] 6.2 Write property test for timer remaining time correctness (Property 4)
+  - [x] 6.2 Write property test for timer remaining time correctness (Property 4)
+
+
     - **Property 4: Timer remaining time correctness**
     - **Validates: Requirements 4.3, 4.13, 4.14**
-  - [ ] 6.3 Write property test for timer restart preserves duration (Property 5)
+  - [x] 6.3 Write property test for timer restart preserves duration (Property 5)
+
+
     - **Property 5: Timer restart preserves duration**
     - **Validates: Requirements 4.6**
-  - [ ] 6.4 Write property test for Pomodoro break duration (Property 6)
+  - [x] 6.4 Write property test for Pomodoro break duration (Property 6)
+
+
     - **Property 6: Pomodoro break duration**
     - **Validates: Requirements 4.7, 4.8**
-  - [ ] 6.5 Write property test for next incomplete Sub-Task selection (Property 7)
+  - [x] 6.5 Write property test for next incomplete Sub-Task selection (Property 7)
+
+
     - **Property 7: Next incomplete Sub-Task selection**
     - **Validates: Requirements 4.10**
-  - [ ] 6.6 Create `FocusTimerContext` React context (`src/contexts/FocusTimerContext.tsx`)
+  - [x] 6.6 Create `FocusTimerContext` React context (`src/contexts/FocusTimerContext.tsx`)
+
+
     - Manage timer state: `remainingSeconds`, `isRunning`, `isPaused`, `isPomodoro`, `pomodoroCount`, `isBreak`
     - Expose `start(durationMs, pomodoro?)`, `stop()`, `pause()`, `resume()`
     - Use `requestAnimationFrame` or 1-second interval for UI updates, but `getRemainingMs` for actual time
     - _Requirements: 4.3, 4.4, 4.11, 4.13, 4.14_
-  - [ ] 6.7 Build `DurationPicker` modal component
+  - [x] 6.7 Build `DurationPicker` modal component
+
+
     - Preset buttons: 2, 5, 10, 15, 25, 45, 60 min
     - Custom input field: 1-120 min (clamped)
     - Pomodoro toggle visible when 25 is selected
     - _Requirements: 4.1, 4.2_
-  - [ ] 6.8 Build `TimerDisplay` component
+  - [x] 6.8 Build `TimerDisplay` component
+
+
     - Circular countdown with mm:ss, progress ring, stop button
     - Overlaid on Focus View
     - _Requirements: 4.3, 4.4_
-  - [ ] 6.9 Build `BreakScreen` component
+  - [x] 6.9 Build `BreakScreen` component
+
+
     - Calming full-screen overlay during Pomodoro breaks
     - Break timer, "Skip break" button
     - Uses Low Stim palette
     - _Requirements: 4.7, 4.9_
-  - [ ] 6.10 Integrate Focus Timer into `FocusView` in `TasksPage`
+  - [x] 6.10 Integrate Focus Timer into `FocusView` in `TasksPage`
+
+
     - Add "Start Timer" button to task cards
     - When timer active: dim non-highlighted sub-tasks, show TimerDisplay
     - Auto-advance highlight on sub-task completion
@@ -193,7 +217,9 @@
     - Handle all-complete during timer: stop timer, trigger completion flow
     - Handle navigation away: pause timer, show "Resume?" on return
     - _Requirements: 4.3, 4.4, 4.5, 4.6, 4.10, 4.11, 4.12, 4.13_
-  - [ ] 6.11 Wrap `App` component with `FocusTimerProvider`
+  - [x] 6.11 Wrap `App` component with `FocusTimerProvider`
+
+
     - _Requirements: 4.3_
 
 - [ ] 7. Checkpoint — Make sure all tests are passing

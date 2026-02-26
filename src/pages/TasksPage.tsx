@@ -9,11 +9,13 @@ import { CircularProgressEmoji } from '../components/CircularProgressEmoji'
 import { SubTaskItem } from '../components/SubTaskItem'
 import { Aurora } from '../components/Aurora'
 import DotGrid from '../components/DotGrid'
+import { DurationPicker } from '../components/DurationPicker'
 import { breakDownTask } from '../services/agentService'
 import * as taskService from '../services/taskService'
 import { getActiveTasks, getDoneTasks } from '../utils/filters'
 import { calculateProgress } from '../utils/progress'
 import { energyTagToCoins } from '../utils/energyTag'
+import { useFocusTimer } from '../contexts/FocusTimerContext'
 import type { BigTask } from '../types'
 
 type Tab = 'active' | 'done'
@@ -364,8 +366,62 @@ function FocusView({
   onDeleteSubTask: (id: string) => void
   onAddSubTask: (bigTaskId: string, name: string) => void
 }) {
-  const progress = calculateProgress(task.subTasks)
   const doneCount = task.subTasks.filter(st => st.completed).length
+  const timer = useFocusTimer()
+  
+  const [showDurationPicker, setShowDurationPicker] = useState(false)
+
+  // Calculate display progress: circle fills as timer counts down (inverted)
+  // When timer starts, circle is empty (0). As time passes, circle fills up.
+  // When timer reaches 0, circle is full (1).
+  // When paused, keep the progress frozen
+  const displayProgress = (timer.isRunning || timer.isPaused) && timer.totalSeconds > 0
+    ? 1 - (timer.remainingSeconds / timer.totalSeconds)
+    : 0
+
+  // Handle timer expiry - just stop, no prompts
+  useEffect(() => {
+    if (timer.remainingSeconds === 0 && timer.isRunning) {
+      timer.stop()
+    }
+  }, [timer.remainingSeconds, timer.isRunning]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pause timer when task is completed
+  useEffect(() => {
+    if (task.completed && timer.isRunning) {
+      timer.pause()
+    }
+  }, [task.completed, timer.isRunning]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleStartTimer = () => {
+    setShowDurationPicker(true)
+  }
+
+  const handleConfirmDuration = (durationMs: number) => {
+    // Stop any existing timer and start fresh
+    timer.stop()
+    timer.start(durationMs, false)
+    setShowDurationPicker(false)
+  }
+
+  const handlePauseTimer = () => {
+    timer.pause()
+  }
+
+  const handleResumeTimer = () => {
+    timer.resume()
+  }
+
+  const handleResetTimer = () => {
+    // Just open the picker, don't stop the current timer yet
+    // Timer will only be stopped when user confirms a new duration
+    setShowDurationPicker(true)
+  }
+
+  const handleCancelPicker = () => {
+    // Just close the picker, keep existing timer state
+    setShowDurationPicker(false)
+  }
 
   return (
     <motion.div
@@ -380,17 +436,30 @@ function FocusView({
         <Aurora colorStops={['#00e5ff', '#064e3b', '#ff1493']} amplitude={1.2} speed={0.8} blend={0.6} />
       </div>
 
-      {/* Scrollable content — back button scrolls with content */}
-      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24 pt-10">
-        <div className="max-w-lg mx-auto">
+      {/* Duration Picker Modal */}
+      {showDurationPicker && (
+        <DurationPicker
+          onConfirm={handleConfirmDuration}
+          onCancel={handleCancelPicker}
+        />
+      )}
+
+      {/* Fixed header with back button */}
+      <div className="relative z-10 shrink-0 px-4 pt-6">
+        <div className="max-w-lg mx-auto flex items-center justify-between">
           <button
             onClick={onClose}
-            className="min-w-[52px] min-h-[52px] flex items-center justify-center text-gray-400 hover:text-white transition-colors mt-4 mb-4 text-2xl"
+            className="min-w-[52px] min-h-[52px] flex items-center justify-center text-gray-400 hover:text-white transition-colors text-2xl"
             aria-label="Back"
           >
             ←
           </button>
+        </div>
+      </div>
 
+      {/* Fixed task name and emoji section */}
+      <div className="relative z-10 shrink-0 px-4 pt-4">
+        <div className="max-w-lg mx-auto">
           {/* Editable name */}
           <div className="text-center mb-2">
             {readOnly ? (
@@ -408,19 +477,66 @@ function FocusView({
           </p>
 
           {/* Big emoji + progress ring */}
-          <div className="flex justify-center mb-8">
+          <div className="flex flex-col items-center mb-4">
             {readOnly ? (
-              <CircularProgressEmoji emoji={task.emoji} progress={progress} size={225} />
+              <CircularProgressEmoji emoji={task.emoji} progress={displayProgress} size={225} />
             ) : (
               <EditableBigEmoji
                 emoji={task.emoji}
-                progress={progress}
+                progress={displayProgress}
                 onSave={(emoji) => onEditEmoji(task.id, emoji)}
               />
             )}
+            
+            {/* Timer countdown text and controls */}
+            {timer.isRunning || timer.isPaused ? (
+              <div className="flex flex-col items-center gap-3 mt-4">
+                <div className="text-3xl font-mono text-neon-cyan">
+                  {String(Math.floor(timer.remainingSeconds / 60)).padStart(2, '0')}:
+                  {String(timer.remainingSeconds % 60).padStart(2, '0')}
+                </div>
+                <div className="flex items-center gap-3">
+                  {timer.isRunning ? (
+                    <button
+                      onClick={handlePauseTimer}
+                      className="w-12 h-12 flex items-center justify-center bg-base-700 text-gray-300 rounded-full hover:bg-base-600 transition-colors text-xl"
+                      aria-label="Pause timer"
+                    >
+                      ⏸
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleResumeTimer}
+                      className="w-12 h-12 flex items-center justify-center bg-neon-cyan/20 text-neon-cyan border border-neon-cyan rounded-full hover:bg-neon-cyan/30 transition-colors text-xl"
+                      aria-label="Resume timer"
+                    >
+                      ▶
+                    </button>
+                  )}
+                  <button
+                    onClick={handleResetTimer}
+                    className="w-12 h-12 flex items-center justify-center bg-base-700 text-gray-300 rounded-full hover:bg-base-600 transition-colors text-xl"
+                    aria-label="Reset timer"
+                  >
+                    ↻
+                  </button>
+                </div>
+              </div>
+            ) : !readOnly && (
+              <button
+                onClick={handleStartTimer}
+                className="mt-4 px-6 py-2 bg-neon-cyan/20 text-neon-cyan border border-neon-cyan rounded-full hover:bg-neon-cyan/30 transition-colors text-sm"
+              >
+                Start Timer
+              </button>
+            )}
           </div>
+        </div>
+      </div>
 
-          {/* Sub-tasks */}
+      {/* Scrollable sub-tasks area */}
+      <div className="relative z-10 flex-1 overflow-y-auto px-4 pb-24">
+        <div className="max-w-lg mx-auto">
           <div className="space-y-1 pl-4">
             {task.subTasks.map(st => (
               <SubTaskItem
