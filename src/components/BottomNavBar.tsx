@@ -30,14 +30,14 @@ export function BottomNavBar() {
         }}
       />
 
-      <div className="relative flex justify-around items-center max-w-lg mx-auto">
+      <div className="relative flex justify-around items-center max-w-2xl mx-auto">
         {tabs.map(tab => {
           const isActive = location.pathname === tab.path
           return (
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`relative flex flex-col items-center justify-center py-1 px-4 min-w-[40px] min-h-[40px] transition-all duration-300 ${
+              className={`relative flex flex-col items-center justify-center pt-2 pb-4 px-4 min-w-[40px] min-h-[56px] transition-all duration-300 ${
                 isActive
                   ? 'text-neon-cyan'
                   : 'text-gray-500 hover:text-gray-300'

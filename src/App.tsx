@@ -5,6 +5,7 @@ import { ensureProfile } from './services/profileService'
 import { StimModeProvider } from './contexts/StimModeContext'
 import { FocusTimerProvider } from './contexts/FocusTimerContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
+import { GlobalNowActiveBar } from './components/GlobalNowActiveBar'
 import { LandingPage } from './pages/LandingPage'
 import { SignInPage } from './pages/SignInPage'
 import { TasksPage } from './pages/TasksPage'
@@ -77,6 +78,9 @@ function AppRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       )}
+
+      {/* Global Now-Active Bar — visible on all pages when timer is active */}
+      <GlobalNowActiveBar />
     </>
   )
 }

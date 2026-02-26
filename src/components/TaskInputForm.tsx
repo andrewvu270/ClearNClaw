@@ -72,7 +72,16 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
 
   return (
     <div className="space-y-2">
-      <div className="relative">
+      <div
+        className="relative rounded-2xl px-4 py-2"
+        style={{
+          background: 'rgba(10, 22, 40, 0.6)',
+          backdropFilter: 'blur(16px) saturate(1.4)',
+          WebkitBackdropFilter: 'blur(16px) saturate(1.4)',
+          border: '1px solid rgba(0, 229, 255, 0.15)',
+          boxShadow: '0 0 16px rgba(0, 229, 255, 0.06), 0 2px 12px rgba(0, 0, 0, 0.25)',
+        }}
+      >
         <input
           ref={inputRef}
           value={value}
@@ -80,13 +89,13 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
           onKeyDown={e => { if (e.key === 'Enter' && !loading) handleSubmit() }}
           placeholder="What's the big task?"
           disabled={loading}
-          className={`w-full bg-transparent text-white text-sm pl-0 py-2 border-b outline-none placeholder-gray-600 disabled:opacity-50 ${
+          className={`w-full bg-transparent text-white text-base pl-0 py-2 border-none outline-none placeholder-gray-400 disabled:opacity-50 ${
             speechSupported ? 'pr-20' : 'pr-10'
-          } ${error ? 'border-neon-pink' : 'border-base-700 focus:border-neon-cyan/50'}`}
+          }`}
           aria-label="Task description"
           aria-invalid={!!error}
         />
-        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center">
           {speechSupported && (
             <button
               onClick={handleVoiceInput}
