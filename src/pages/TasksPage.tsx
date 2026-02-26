@@ -488,8 +488,8 @@ function FocusView({
               />
             )}
             
-            {/* Timer countdown text and controls */}
-            {timer.isRunning || timer.isPaused ? (
+            {/* Timer countdown text and controls - only show for active tasks */}
+            {!readOnly && (timer.isRunning || timer.isPaused) ? (
               <div className="flex flex-col items-center gap-3 mt-4">
                 <div className="text-3xl font-mono text-neon-cyan">
                   {String(Math.floor(timer.remainingSeconds / 60)).padStart(2, '0')}:

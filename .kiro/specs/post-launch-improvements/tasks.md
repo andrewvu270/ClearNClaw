@@ -222,7 +222,11 @@
 
     - _Requirements: 4.3_
 
-- [ ] 7. Checkpoint — Make sure all tests are passing
+- [x] 7. Checkpoint — Make sure all tests are passing
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 8. Push Notifications
