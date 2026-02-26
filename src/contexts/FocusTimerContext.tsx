@@ -7,6 +7,7 @@ import {
   resumeTimer as resumeTimerUtil,
   type TimerState,
 } from '../utils/focusTimer'
+import type { BigTask } from '../types'
 
 interface FocusTimerContextValue {
   remainingSeconds: number
@@ -16,6 +17,8 @@ interface FocusTimerContextValue {
   isPomodoro: boolean
   pomodoroCount: number
   isBreak: boolean
+  activeTask: BigTask | null
+  setActiveTask: (task: BigTask | null) => void
   start: (durationMs: number, pomodoro?: boolean) => void
   stop: () => void
   pause: () => void
@@ -28,6 +31,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
   const [timerState, setTimerState] = useState<TimerState | null>(null)
   const [remainingSeconds, setRemainingSeconds] = useState(0)
   const [totalSeconds, setTotalSeconds] = useState(0)
+  const [activeTask, setActiveTask] = useState<BigTask | null>(null)
 
   // Update remaining time using requestAnimationFrame for smooth updates
   useEffect(() => {
@@ -66,6 +70,7 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
     setTimerState(null)
     setRemainingSeconds(0)
     setTotalSeconds(0)
+    setActiveTask(null)
   }, [])
 
   const pause = useCallback(() => {
@@ -92,6 +97,8 @@ export function FocusTimerProvider({ children }: { children: ReactNode }) {
     isPomodoro: timerState?.isPomodoro ?? false,
     pomodoroCount: timerState?.pomodoroCount ?? 0,
     isBreak: timerState?.isBreak ?? false,
+    activeTask,
+    setActiveTask,
     start,
     stop,
     pause,

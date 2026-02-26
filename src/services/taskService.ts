@@ -1,7 +1,12 @@
 import { supabase } from '../lib/supabase'
-import type { BigTask, SubTask } from '../types'
+import type { BigTask, SubTask, RepeatOption } from '../types'
 import type { EnergyTag } from '../utils/energyTag'
 import { parseEnergyTag } from '../utils/energyTag'
+
+function parseRepeatSchedule(value: unknown): RepeatOption | null {
+  if (value === 'daily' || value === 'weekly' || value === 'custom') return value
+  return null
+}
 
 function mapBigTask(row: Record<string, unknown>, subTasks: SubTask[] = []): BigTask {
   return {
@@ -14,6 +19,8 @@ function mapBigTask(row: Record<string, unknown>, subTasks: SubTask[] = []): Big
     completedAt: (row.completed_at as string) ?? null,
     subTasks,
     energyTag: parseEnergyTag(row.energy_tag as string | null),
+    reminderAt: (row.reminder_at as string) ?? null,
+    repeatSchedule: parseRepeatSchedule(row.repeat_schedule),
   }
 }
 
@@ -163,6 +170,24 @@ export async function deleteSubTask(subTaskId: string): Promise<void> {
   if (error) throw error
 }
 
+export async function updateBigTaskReminder(taskId: string, reminderAt: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('big_tasks')
+    .update({ reminder_at: reminderAt })
+    .eq('id', taskId)
+
+  if (error) throw error
+}
+
+export async function updateBigTaskRepeatSchedule(taskId: string, repeatSchedule: string | null): Promise<void> {
+  const { error } = await supabase
+    .from('big_tasks')
+    .update({ repeat_schedule: repeatSchedule })
+    .eq('id', taskId)
+
+  if (error) throw error
+}
+
 export async function addSubTask(bigTaskId: string, name: string): Promise<SubTask> {
   // Get current max sort_order
   const { data: existing } = await supabase
@@ -210,5 +235,32 @@ export async function createDemoTaskIfNeeded(userId: string): Promise<void> {
       ],
       'low'
     )
+  }
+}
+
+/**
+ * Quick complete a big task by marking all incomplete subtasks as complete.
+ * This triggers the same completion flow as completing subtasks individually,
+ * including coin rewards via the RPC.
+ */
+export async function quickCompleteTask(taskId: string, userId: string): Promise<void> {
+  // Get the task with all its subtasks
+  const { data: taskData, error: fetchError } = await supabase
+    .from('big_tasks')
+    .select('*, sub_tasks(*)')
+    .eq('id', taskId)
+    .single()
+
+  if (fetchError || !taskData) {
+    throw fetchError ?? new Error('Task not found')
+  }
+
+  const subTasks = ((taskData.sub_tasks as Record<string, unknown>[]) ?? []).map(mapSubTask)
+  const incompleteSubTasks = subTasks.filter(st => !st.completed)
+
+  // Complete each incomplete subtask
+  // The last one will trigger the RPC that awards coins and marks the big task complete
+  for (const subTask of incompleteSubTasks) {
+    await toggleSubTask(subTask.id, true, userId)
   }
 }

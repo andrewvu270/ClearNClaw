@@ -1,5 +1,7 @@
 import type { EnergyTag } from '../utils/energyTag'
 
+export type RepeatOption = 'daily' | 'weekly' | 'custom'
+
 export interface BigTask {
   id: string
   userId: string
@@ -10,6 +12,8 @@ export interface BigTask {
   completedAt: string | null
   subTasks: SubTask[]
   energyTag: EnergyTag
+  reminderAt: string | null
+  repeatSchedule: RepeatOption | null
 }
 
 export interface SubTask {
