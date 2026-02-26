@@ -8,9 +8,10 @@ interface SubTaskItemProps {
   onEditEmoji?: (subTaskId: string, emoji: string) => void
   onDelete: (subTaskId: string) => void
   readOnly?: boolean
+  hideCheckbox?: boolean
 }
 
-export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDelete, readOnly }: SubTaskItemProps) {
+export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDelete, readOnly, hideCheckbox }: SubTaskItemProps) {
   const [editing, setEditing] = useState(false)
   const [editValue, setEditValue] = useState(subTask.name)
   const [editingEmoji, setEditingEmoji] = useState(false)
@@ -46,7 +47,7 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
   }
 
   return (
-    <div className="flex items-center gap-3 group min-h-[48px]">
+    <div className="flex items-center gap-2 group min-h-[48px]">
       {/* Emoji with background circle */}
       {editingEmoji && !readOnly ? (
         <input
@@ -94,32 +95,35 @@ export function SubTaskItem({ subTask, onToggle, onEditName, onEditEmoji, onDele
         )}
       </div>
 
-      {/* Checkbox */}
-      <button
-        onClick={() => !readOnly && onToggle(subTask.id, !subTask.completed)}
-        className="w-10 h-10 flex items-center justify-center shrink-0"
-        aria-label={subTask.completed ? 'Mark incomplete' : 'Mark complete'}
-        disabled={readOnly}
-      >
-        <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-          subTask.completed
-            ? 'bg-neon-cyan/20 border-neon-cyan text-neon-cyan'
-            : 'border-gray-500'
-        }`}>
-          {subTask.completed && <span className="text-xs">✓</span>}
-        </div>
-      </button>
+      {/* Checkbox + Delete grouped closely */}
+      <div className="flex items-center gap-0 shrink-0">
+        {!hideCheckbox && (
+          <button
+            onClick={() => !readOnly && onToggle(subTask.id, !subTask.completed)}
+            className="w-8 h-8 flex items-center justify-center"
+            aria-label={subTask.completed ? 'Mark incomplete' : 'Mark complete'}
+            disabled={readOnly}
+          >
+            <div className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              subTask.completed
+                ? 'bg-neon-cyan/20 border-neon-cyan text-neon-cyan'
+                : 'border-gray-500'
+            }`}>
+              {subTask.completed && <span className="text-xs">✓</span>}
+            </div>
+          </button>
+        )}
 
-      {/* Delete */}
-      {!readOnly && (
-        <button
-          onClick={() => onDelete(subTask.id)}
-          className="w-8 h-10 flex items-center justify-center text-gray-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-neon-pink transition-all shrink-0"
-          aria-label="Delete sub-task"
-        >
-          ×
-        </button>
-      )}
+        {!readOnly && (
+          <button
+            onClick={() => onDelete(subTask.id)}
+            className="w-6 h-8 flex items-center justify-center text-gray-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:text-neon-pink transition-all"
+            aria-label="Delete sub-task"
+          >
+            ×
+          </button>
+        )}
+      </div>
     </div>
   )
 }
