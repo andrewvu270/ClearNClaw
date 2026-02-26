@@ -229,41 +229,62 @@
 
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Push Notifications
-  - [ ] 8.1 Create `push_subscriptions` table via Supabase migration
+- [x] 8. Push Notifications
+
+
+
+
+
+  - [x] 8.1 Create `push_subscriptions` table via Supabase migration
+
+
     - Table with `user_id`, `endpoint`, `p256dh`, `auth` columns
     - RLS policy: users manage own subscriptions
     - Add `push_enabled`, `push_frequency` columns to `profiles`
     - Add `last_session_date` as `timestamp with time zone` (not `date`) to `profiles` — hourly frequency checks need time-of-day precision
     - _Requirements: 5.1, 5.4_
-  - [ ] 8.2 Create push notification service (`src/services/pushService.ts`)
+  - [x] 8.2 Create push notification service (`src/services/pushService.ts`)
+
+
     - `isPushSupported()` — checks for `serviceWorkerRegistration.pushManager`
     - `subscribePush(userId, subscription)` — stores subscription in Supabase
     - `unsubscribePush(userId)` — removes subscription from Supabase and unsubscribes browser
     - _Requirements: 5.1, 5.4, 5.5_
-  - [ ] 8.3 Generate VAPID keys and configure service worker for push events
+  - [x] 8.3 Generate VAPID keys and configure service worker for push events
+
+
     - Add push event listener to service worker (via vite-plugin-pwa custom SW)
     - Handle notification click: open app and navigate to task
     - _Requirements: 5.3_
-  - [ ] 8.4 Create Supabase Edge Function for sending push notifications
+  - [x] 8.4 Create Supabase Edge Function for sending push notifications
+
+
     - Accepts user_id, finds active tasks, picks task with fewest remaining sub-tasks
     - Sends push via Web Push protocol using VAPID keys
     - Cleans up stale subscriptions on 410 response
     - _Requirements: 5.2_
-  - [ ] 8.5 Write property test for notification task selection (Property 8)
+  - [x] 8.5 Write property test for notification task selection (Property 8)
+
+
     - **Property 8: Notification task selection**
     - **Validates: Requirements 5.2**
-  - [ ] 8.6 Add push notification toggle and reminder schedule picker to `ProfilePage`
+  - [x] 8.6 Add push notification toggle and reminder schedule picker to `ProfilePage`
+
+
     - Toggle: requests permission, subscribes/unsubscribes
     - Schedule picker: "Every hour", "Every 2 hours", "3 times a day", "Once a day"
     - Hide toggle if `isPushSupported()` returns false
     - _Requirements: 5.1, 5.4, 5.5, 5.6_
-  - [ ] 8.7 Set up Supabase pg_cron or Edge Function scheduler for periodic notification checks
+  - [x] 8.7 Set up Supabase pg_cron or Edge Function scheduler for periodic notification checks
+
+
     - Check users who haven't opened app within their configured frequency
     - Trigger push notification Edge Function
     - Scheduler logic: compare `profiles.last_session_date` against current time and `push_frequency` value. For "hourly" → check if last_session_date > 1 hour ago. For "2hours" → > 2 hours. For "3daily" → divide waking hours (8am-10pm) into 3 slots. For "daily" → > 24 hours.
     - _Requirements: 5.2, 5.6_
-  - [ ] 8.8 Wire up `last_session_date` update on app open
+  - [x] 8.8 Wire up `last_session_date` update on app open
+
+
     - Update `profiles.last_session_date` to current timestamp when Tasks page loads (or on auth session restore)
     - _Requirements: 5.2_
 

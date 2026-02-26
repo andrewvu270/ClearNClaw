@@ -73,7 +73,17 @@ export function TasksPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) setUserId(session.user.id)
+      if (session) {
+        setUserId(session.user.id)
+        // Update last_session_date for push notification scheduling
+        supabase
+          .from('profiles')
+          .update({ last_session_date: new Date().toISOString() })
+          .eq('id', session.user.id)
+          .then(({ error }) => {
+            if (error) console.warn('Failed to update last_session_date:', error)
+          })
+      }
     })
   }, [])
 

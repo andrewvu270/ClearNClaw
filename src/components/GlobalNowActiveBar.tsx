@@ -17,6 +17,10 @@ export function GlobalNowActiveBar() {
     }
   }
 
+  const handleCancel = () => {
+    timer.stop()
+  }
+
   return (
     <AnimatePresence>
       {showBar && timer.activeTask && (
@@ -25,6 +29,7 @@ export function GlobalNowActiveBar() {
           remainingSeconds={timer.remainingSeconds}
           isPaused={timer.isPaused}
           onClick={handleClick}
+          onCancel={handleCancel}
         />
       )}
     </AnimatePresence>

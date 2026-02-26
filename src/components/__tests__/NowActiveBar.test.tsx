@@ -70,6 +70,7 @@ describe('NowActiveBar', () => {
                     remainingSeconds={timerState.remainingSeconds}
                     isPaused={timerState.isPaused}
                     onClick={vi.fn()}
+                    onCancel={vi.fn()}
                   />
                 ) : null}
               </>
@@ -113,6 +114,7 @@ describe('NowActiveBar', () => {
                 remainingSeconds={remainingSeconds}
                 isPaused={isPaused}
                 onClick={vi.fn()}
+                onCancel={vi.fn()}
               />
             )
 

@@ -6,9 +6,10 @@ export interface NowActiveBarProps {
   remainingSeconds: number
   isPaused: boolean
   onClick: () => void
+  onCancel: () => void
 }
 
-export function NowActiveBar({ task, remainingSeconds, onClick }: NowActiveBarProps) {
+export function NowActiveBar({ task, remainingSeconds, onClick, onCancel }: NowActiveBarProps) {
   const minutes = Math.floor(remainingSeconds / 60)
   const seconds = remainingSeconds % 60
   const timeDisplay = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
@@ -57,6 +58,27 @@ export function NowActiveBar({ task, remainingSeconds, onClick }: NowActiveBarPr
           data-testid="now-active-time"
         >
           {timeDisplay}
+        </span>
+
+        {/* Cancel button */}
+        <span
+          role="button"
+          tabIndex={0}
+          aria-label="Cancel timer"
+          data-testid="now-active-cancel"
+          onClick={(e) => {
+            e.stopPropagation()
+            onCancel()
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.stopPropagation()
+              onCancel()
+            }
+          }}
+          className="w-7 h-7 flex items-center justify-center rounded-full shrink-0 text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          ✕
         </span>
       </div>
     </motion.button>

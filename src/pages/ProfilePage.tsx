@@ -9,6 +9,7 @@ import ElectricBorder from '../components/ElectricBorder'
 import TiltedCard from '../components/TiltedCard'
 import { getProfile, getToyCollection } from '../services/profileService'
 import { useStimMode } from '../contexts/StimModeContext'
+import { isPushSupported, subscribePush, unsubscribePush, updatePushFrequency } from '../services/pushService'
 // @ts-expect-error — toyCache is a JS module
 import { getCachedToys } from '../utils/toyCache'
 import type { UserProfile, UserToy } from '../types'
@@ -34,6 +35,11 @@ export function ProfilePage() {
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
   const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string; isRare?: boolean; isElectric?: boolean; group?: string } | null>(null)
   const [dataLoaded, setDataLoaded] = useState(false)
+  const [pushSupported] = useState(() => isPushSupported())
+  const [pushEnabled, setPushEnabled] = useState(false)
+  const [pushFrequency, setPushFrequency] = useState<string | null>(null)
+  const [pushLoading, setPushLoading] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   // Lock body scroll when popup is open
   useEffect(() => {
@@ -51,9 +57,16 @@ export function ProfilePage() {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) return
       const uid = session.user.id
+      setUserId(uid)
       Promise.all([
         getProfile(uid).then(setProfile),
         getToyCollection(uid).then(setToys),
+        supabase.from('profiles').select('push_enabled, push_frequency').eq('id', uid).single().then(({ data }) => {
+          if (data) {
+            setPushEnabled(data.push_enabled ?? false)
+            setPushFrequency(data.push_frequency ?? null)
+          }
+        }),
       ]).then(() => setDataLoaded(true))
     })
     getCachedToys().then((data: Record<string, ToyInfo> | null) => {
@@ -64,6 +77,35 @@ export function ProfilePage() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     navigate('/signin', { replace: true })
+  }
+
+  const handlePushToggle = async () => {
+    if (!userId) return
+    setPushLoading(true)
+    try {
+      if (pushEnabled) {
+        await unsubscribePush(userId)
+        setPushEnabled(false)
+        setPushFrequency(null)
+      } else {
+        const success = await subscribePush(userId)
+        if (success) {
+          setPushEnabled(true)
+          setPushFrequency('hourly')
+          await updatePushFrequency(userId, 'hourly')
+        }
+      }
+    } catch (err) {
+      console.error('Push toggle error:', err)
+    } finally {
+      setPushLoading(false)
+    }
+  }
+
+  const handleFrequencyChange = async (freq: 'hourly' | '2hours' | '3daily' | 'daily') => {
+    if (!userId) return
+    setPushFrequency(freq)
+    await updatePushFrequency(userId, freq)
   }
 
   // Build a map of toyId -> count from user's collection
@@ -150,6 +192,54 @@ export function ProfilePage() {
             <p className="text-gray-400 text-xs font-body mt-1">Logout</p>
           </button>
         </div>
+
+        {/* Push Notifications */}
+        {pushSupported && (
+          <div className="mb-6 bg-base-800 border border-base-700 rounded-xl p-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">🔔</span>
+                <span className="text-gray-300 text-xs font-body">Push Reminders</span>
+              </div>
+              <button
+                onClick={handlePushToggle}
+                disabled={pushLoading}
+                className={`relative w-10 h-6 rounded-full transition-colors ${
+                  pushEnabled ? 'bg-neon-cyan/40' : 'bg-base-700'
+                } ${pushLoading ? 'opacity-50' : ''}`}
+                aria-label="Toggle push notifications"
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 rounded-full transition-transform ${
+                    pushEnabled ? 'translate-x-4 bg-neon-cyan' : 'bg-gray-500'
+                  }`}
+                />
+              </button>
+            </div>
+            {pushEnabled && (
+              <div className="flex gap-2 flex-wrap mt-3">
+                {([
+                  { value: 'hourly', label: 'Every hour' },
+                  { value: '2hours', label: 'Every 2h' },
+                  { value: '3daily', label: '3×/day' },
+                  { value: 'daily', label: 'Once/day' },
+                ] as const).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleFrequencyChange(opt.value)}
+                    className={`px-3 py-1 rounded-lg text-xs font-body transition-colors ${
+                      pushFrequency === opt.value
+                        ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/30'
+                        : 'bg-base-700 text-gray-400 border border-base-700 hover:bg-base-700/80'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* My Collection */}
         <h2 className="text-neon-pink text-[10px] text-center mb-4 font-pixel">My Collection</h2>
