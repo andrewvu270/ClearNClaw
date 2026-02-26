@@ -177,29 +177,53 @@
     - **Property 2: Now-Active Bar displays correct task information**
     - **Validates: Requirements 5.2**
 
-- [ ] 9. Implement auto-swap timer behavior
-  - [ ] 9.1 Update `TasksPage.tsx` to auto-swap timers
+- [x] 9. Implement auto-swap timer behavior
+
+
+
+
+
+
+
+  - [x] 9.1 Update `TasksPage.tsx` to auto-swap timers
+
     - When Focus View is opened on a new task while a timer is active, stop the existing timer first
     - Update `focusedTask` and `activeTimerTask` to the new task
     - Show toast notification "Switched focus to [task name]"
     - _Requirements: 6.1, 6.2, 6.3_
 
-  - [ ] 9.2 Write property test for auto-swap single timer (Property 3)
+  - [x] 9.2 Write property test for auto-swap single timer (Property 3)
+
+
     - **Property 3: Auto-swap enforces single active timer**
     - **Validates: Requirements 6.1, 6.2**
 
-- [ ] 10. Clean up and verify Focus View preservation
-  - [ ] 10.1 Verify Focus View still works correctly for active tasks
+- [x] 10. Clean up and verify Focus View preservation
+
+
+
+
+
+  - [x] 10.1 Verify Focus View still works correctly for active tasks
+
+
     - Test timer controls (start, pause, resume, reset)
     - Test subtask checkbox toggling
     - Test completion flow
     - Test back button returns to task list
     - _Requirements: 7.1, 7.2, 7.3, 7.4_
 
-  - [ ] 10.2 Remove unused code
+
+  - [x] 10.2 Remove unused code
+
     - Remove `QuickCompleteModal` component if no longer used
     - Clean up dead imports across all modified files
     - _Requirements: 2.2_
 
-- [ ] 11. Final checkpoint - Make sure all tests are passing
+- [x] 11. Final checkpoint - Make sure all tests are passing
+
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.

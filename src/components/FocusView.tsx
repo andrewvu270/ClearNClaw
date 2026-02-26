@@ -18,6 +18,7 @@ export interface FocusViewProps {
   onEditSubTaskEmoji: (id: string, emoji: string) => void
   onDeleteSubTask: (id: string) => void
   onAddSubTask: (bigTaskId: string, name: string) => void
+  onAutoSwap?: (taskName: string) => void
 }
 
 export function FocusView({
@@ -31,35 +32,50 @@ export function FocusView({
   onEditSubTaskEmoji,
   onDeleteSubTask,
   onAddSubTask,
+  onAutoSwap,
 }: FocusViewProps) {
   const doneCount = task.subTasks.filter(st => st.completed).length
   const timer = useFocusTimer()
 
   const [showDurationPicker, setShowDurationPicker] = useState(false)
 
-  const displayProgress = (timer.isRunning || timer.isPaused) && timer.totalSeconds > 0
+  // Timer belongs to this task only if activeTask matches
+  const isTimerForThisTask = timer.activeTask?.id === task.id
+  const timerRunningHere = isTimerForThisTask && timer.isRunning
+  const timerPausedHere = isTimerForThisTask && timer.isPaused
+  const timerActiveHere = timerRunningHere || timerPausedHere
+
+  const displayProgress = timerActiveHere && timer.totalSeconds > 0
     ? 1 - (timer.remainingSeconds / timer.totalSeconds)
     : 0
 
   useEffect(() => {
-    if (timer.remainingSeconds === 0 && timer.isRunning) {
+    if (timer.remainingSeconds === 0 && timerRunningHere) {
       timer.stop()
     }
-  }, [timer.remainingSeconds, timer.isRunning]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [timer.remainingSeconds, timerRunningHere]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (task.completed && timer.isRunning) {
+    if (task.completed && timerRunningHere) {
       timer.pause()
     }
-  }, [task.completed, timer.isRunning]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [task.completed, timerRunningHere]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleStartTimer = () => {
     setShowDurationPicker(true)
   }
 
   const handleConfirmDuration = (durationMs: number) => {
+    // Auto-swap: if a timer is active on a different task, notify the caller
+    const timerActive = timer.isRunning || timer.isPaused
+    const differentTask = timer.activeTask && timer.activeTask.id !== task.id
+    if (timerActive && differentTask) {
+      onAutoSwap?.(task.name)
+    }
+
     timer.stop()
     timer.start(durationMs, false)
+    timer.setActiveTask(task)
     setShowDurationPicker(false)
   }
 
@@ -139,9 +155,9 @@ export function FocusView({
             />
           )}
 
-          {!readOnly && (timer.isRunning || timer.isPaused) ? (
+          {!readOnly && timerActiveHere ? (
             <div className="flex items-center justify-center gap-4 mt-4" data-testid="focus-timer-controls">
-              {timer.isRunning ? (
+              {timerRunningHere ? (
                 <button
                   onClick={handlePauseTimer}
                   className="flex items-center justify-center text-gray-300 hover:text-white transition-colors text-lg"

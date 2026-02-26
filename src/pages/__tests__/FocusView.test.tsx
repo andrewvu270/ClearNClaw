@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render } from '@testing-library/react'
+import { render, fireEvent } from '@testing-library/react'
 import * as fc from 'fast-check'
 import { FocusView } from '../../components/FocusView'
 import type { EnergyTag } from '../../utils/energyTag'
@@ -222,5 +222,96 @@ describe('FocusView', () => {
         { numRuns: 100 }
       )
     })
+  })
+})
+
+
+/**
+ * Verification tests for Focus View interactive behavior.
+ * Requirements: 7.1, 7.2, 7.3, 7.4
+ */
+describe('FocusView - Interactive Verification', () => {
+  const baseTask = {
+    id: 'task-1',
+    userId: 'user-1',
+    name: 'Test Task',
+    emoji: '📝',
+    completed: false,
+    createdAt: new Date().toISOString(),
+    completedAt: null,
+    subTasks: [
+      { id: 'st-1', bigTaskId: 'task-1', name: 'Sub 1', emoji: '▪️', completed: false, sortOrder: 0 },
+      { id: 'st-2', bigTaskId: 'task-1', name: 'Sub 2', emoji: '▪️', completed: true, sortOrder: 1 },
+    ],
+    energyTag: 'medium' as EnergyTag,
+    reminderAt: null,
+    repeatSchedule: null,
+  }
+
+  const defaultHandlers = {
+    onClose: vi.fn(),
+    onEditName: vi.fn(),
+    onEditEmoji: vi.fn(),
+    onToggleSubTask: vi.fn(),
+    onEditSubTaskName: vi.fn(),
+    onEditSubTaskEmoji: vi.fn(),
+    onDeleteSubTask: vi.fn(),
+    onAddSubTask: vi.fn(),
+  }
+
+  // Requirement 7.1: Focus View displays all elements for non-completed task
+  it('displays timer start button for active (non-completed) task', () => {
+    const { container } = render(
+      <FocusView task={baseTask} readOnly={false} {...defaultHandlers} />
+    )
+    const startBtn = container.querySelector('[data-testid="focus-start-timer-btn"]')
+    expect(startBtn).not.toBeNull()
+    expect(startBtn!.textContent).toContain('Start Timer')
+  })
+
+  // Requirement 7.2: Timer controls work (start opens duration picker)
+  it('opens duration picker when Start Timer is clicked', () => {
+    const { container } = render(
+      <FocusView task={baseTask} readOnly={false} {...defaultHandlers} />
+    )
+    const startBtn = container.querySelector('[data-testid="focus-start-timer-btn"]')!
+    fireEvent.click(startBtn)
+    // DurationPicker should now be rendered
+    const pickerHeading = container.querySelector('h2')
+    expect(pickerHeading).not.toBeNull()
+    expect(pickerHeading!.textContent).toContain('Set Timer')
+  })
+
+  // Requirement 7.3: Subtask checkbox toggling calls handler
+  it('calls onToggleSubTask when a subtask checkbox is clicked', () => {
+    const toggleFn = vi.fn()
+    const { container } = render(
+      <FocusView task={baseTask} readOnly={false} {...defaultHandlers} onToggleSubTask={toggleFn} />
+    )
+    const checkboxes = container.querySelectorAll('[aria-label="Mark complete"], [aria-label="Mark incomplete"]')
+    expect(checkboxes.length).toBe(2)
+    // Click the first (incomplete) subtask checkbox
+    fireEvent.click(checkboxes[0])
+    expect(toggleFn).toHaveBeenCalledWith('st-1', true)
+  })
+
+  // Requirement 7.4: Back button calls onClose
+  it('calls onClose when back button is clicked', () => {
+    const closeFn = vi.fn()
+    const { container } = render(
+      <FocusView task={baseTask} readOnly={false} {...defaultHandlers} onClose={closeFn} />
+    )
+    const backBtn = container.querySelector('[aria-label="Back"]')!
+    fireEvent.click(backBtn)
+    expect(closeFn).toHaveBeenCalledTimes(1)
+  })
+
+  // Requirement 7.1: Progress text shows correct count
+  it('displays correct progress count', () => {
+    const { container } = render(
+      <FocusView task={baseTask} readOnly={false} {...defaultHandlers} />
+    )
+    const progressText = container.querySelector('[data-testid="focus-progress-text"]')
+    expect(progressText!.textContent).toBe('1/2 done')
   })
 })

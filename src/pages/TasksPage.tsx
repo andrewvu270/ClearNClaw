@@ -14,6 +14,7 @@ import { useFocusTimer } from '../contexts/FocusTimerContext'
 import { TaskGroupSection } from '../components/TaskGroupSection'
 import { TaskDetailModal } from '../components/TaskDetailModal'
 import { FocusView } from '../components/FocusView'
+import { Toast } from '../components/Toast'
 import type { BigTask, RepeatOption } from '../types'
 
 export function TasksPage() {
@@ -24,6 +25,7 @@ export function TasksPage() {
   const [dataLoaded, setDataLoaded] = useState(false)
   const [restoredFocus, setRestoredFocus] = useState(false)
   const [detailModalTask, setDetailModalTask] = useState<BigTask | null>(null)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
   
   const timer = useFocusTimer()
   const location = useLocation()
@@ -106,10 +108,6 @@ export function TasksPage() {
     // Timer just became active — set the active task to whatever is focused
     if (isActive && !wasActive && focusedTask) {
       timer.setActiveTask(focusedTask)
-    }
-    // Timer stopped — clear active task
-    if (!isActive && wasActive) {
-      timer.setActiveTask(null)
     }
 
     prevTimerRunning.isRunning = timer.isRunning
@@ -309,6 +307,7 @@ export function TasksPage() {
             onEditSubTaskEmoji={handleEditSubTaskEmoji}
             onDeleteSubTask={handleDeleteSubTask}
             onAddSubTask={handleAddSubTask}
+            onAutoSwap={(taskName) => setToastMessage(`Switched focus to ${taskName}`)}
           />
         )}
       </AnimatePresence>
@@ -360,6 +359,9 @@ export function TasksPage() {
         onSetReminder={handleSetReminder}
         onSetRepeat={handleSetRepeat}
       />
+
+      {/* Toast notification */}
+      <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />
 
       <BottomNavBar />
     </div>

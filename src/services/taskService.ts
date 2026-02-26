@@ -238,29 +238,4 @@ export async function createDemoTaskIfNeeded(userId: string): Promise<void> {
   }
 }
 
-/**
- * Quick complete a big task by marking all incomplete subtasks as complete.
- * This triggers the same completion flow as completing subtasks individually,
- * including coin rewards via the RPC.
- */
-export async function quickCompleteTask(taskId: string, userId: string): Promise<void> {
-  // Get the task with all its subtasks
-  const { data: taskData, error: fetchError } = await supabase
-    .from('big_tasks')
-    .select('*, sub_tasks(*)')
-    .eq('id', taskId)
-    .single()
 
-  if (fetchError || !taskData) {
-    throw fetchError ?? new Error('Task not found')
-  }
-
-  const subTasks = ((taskData.sub_tasks as Record<string, unknown>[]) ?? []).map(mapSubTask)
-  const incompleteSubTasks = subTasks.filter(st => !st.completed)
-
-  // Complete each incomplete subtask
-  // The last one will trigger the RPC that awards coins and marks the big task complete
-  for (const subTask of incompleteSubTasks) {
-    await toggleSubTask(subTask.id, true, userId)
-  }
-}
