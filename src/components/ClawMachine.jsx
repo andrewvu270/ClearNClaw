@@ -364,7 +364,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSucc
           // Only drop if shadow is NOT over the chute
           if (!isOverChute) {
             // 30% chance to drop
-            if (Math.random() <= 0.3) {
+            if (Math.random() <= 0.6) {
               dropToyToOriginal()
             }
           }
