@@ -331,8 +331,54 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
       ;[vertRail, armJoint, arm].forEach((obj) => (obj.moveWith[0] = g.targetToy))
       setRotateAngle(g.targetToy)
       g.targetToy.el.classList.add('grabbed')
+      
+      // Schedule random drop between now and ~3 seconds (before turn ends)
+      const randomDelay = Math.random() * 3000
+      setTimeout(() => {
+        dropToyToOriginal()
+      }, randomDelay)
     } else {
       arm.el.classList.add('missed')
+    }
+  }
+
+  const dropToyToOriginal = () => {
+    const g = gameRef.current
+    const { vertRail, armJoint, arm } = g.objects
+    if (g.targetToy) {
+      const toy = g.targetToy
+      // Detach toy from arm
+      ;[vertRail, armJoint, arm].forEach((obj) => (obj.moveWith[0] = null))
+      toy.el.classList.remove('grabbed')
+      toy.el.style.setProperty('--rotate-angle', '0deg')
+      toy.transformOrigin = 'center'
+      applyStyles(toy)
+
+      // Animate toy falling to original y but keep current x
+      const startY = toy.y
+      const targetY = toy.default.y
+      const duration = 300
+      const startTime = Date.now()
+
+      const animateDrop = () => {
+        const elapsed = Date.now() - startTime
+        const progress = Math.min(elapsed / duration, 1)
+        // Ease out for natural fall
+        const eased = 1 - Math.pow(1 - progress, 2)
+
+        toy.y = startY + (targetY - startY) * eased
+        applyStyles(toy)
+
+        if (progress < 1) {
+          requestAnimationFrame(animateDrop)
+        } else {
+          // Update default x to current position so it stays there
+          toy.default.x = toy.x
+        }
+      }
+      requestAnimationFrame(animateDrop)
+
+      g.targetToy = null
     }
   }
 
@@ -345,6 +391,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
     moveObject(vertRail, {
       moveKey: 'x',
       target: g.machineWidth - g.objects.armJoint.w - MACHINE_BUFFER.x,
+      moveTime: 50,
       next: stopHoriBtnAndActivateVertBtn,
     })
   }
@@ -361,6 +408,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
     moveObject(g.objects.armJoint, {
       moveKey: 'y',
       target: MACHINE_BUFFER.y,
+      moveTime: 50,
     })
   }
 
