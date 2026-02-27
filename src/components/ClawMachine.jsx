@@ -333,7 +333,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
       g.targetToy.el.classList.add('grabbed')
 
       // Schedule potential drop check - 30% chance but only if shadow not over chute
-      const randomDelay = Math.random() * 3000
+      const randomDelay = Math.random() * 4000
       setTimeout(() => {
         if (g.targetToy) {
           // Chute opening (bottom-left corner)
