@@ -124,10 +124,11 @@ export function ProfilePage() {
     return m
   }, [toys])
 
-  // Find the max count for electric border
+  // Find the max count for electric border (only if > 1, so initial count of 1 doesn't get border)
   const maxCount = useMemo(() => {
     if (toys.length === 0) return 0
-    return Math.max(...toys.map(t => t.count))
+    const max = Math.max(...toys.map(t => t.count))
+    return max > 1 ? max : 0
   }, [toys])
 
   // Group all toys by group name
