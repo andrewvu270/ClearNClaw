@@ -309,7 +309,7 @@ export function ProfilePage() {
                     <ToyPopupContent toy={selectedToy} />
                   </ElectricBorder>
                 ) : selectedToy.isElectric ? (
-                  <div className="rounded-2xl p-[2px]" style={{ background: 'linear-gradient(135deg, #00e5ff, #7c3aed, #ec4899, #00e5ff)' }}>
+                  <div className="rounded-2xl p-[2px]" style={{ background: 'linear-gradient(135deg, #00e5ff, #7c3aed, #ec4899, #00e5ff)', transformStyle: 'preserve-3d' }}>
                     <ToyPopupContent toy={selectedToy} />
                   </div>
                 ) : (

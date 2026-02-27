@@ -95,6 +95,7 @@ html {
     linear-gradient(#fff 0 0);
   mask-composite: exclude;
   animation: electric-spin 2s linear infinite;
+  z-index: -1;
 }
 
 @keyframes electric-spin {
