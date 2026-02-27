@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
 import DotGrid from '../components/DotGrid'
@@ -12,6 +13,7 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
   const [userId, setUserId] = useState<string | null>(null)
   const [message, setMessage] = useState('')
   const [resetCount, setResetCount] = useState(0)
+  const [toast, setToast] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -29,6 +31,8 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
           })
       }
     })
+    // Show refill toast on mount
+    setToast('🎰 Toys restocked! The claw hungers...')
   }, [])
 
   // Scroll to top whenever the claw page becomes active
@@ -66,30 +70,84 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
 
   const handleRefreshToys = async () => {
     if (!userId || coins === null || coins < 5 || playing) return
-    
+
     // Spend 5 coins and increment reset count
     const { error } = await supabase.rpc('refresh_claw_toys', { p_user_id: userId })
-    
+
     if (error) {
-      setMessage('Failed to refresh toys')
+      setToast('Failed to refresh toys')
       return
     }
-    
+
     setCoins(prev => (prev !== null ? prev - 5 : 0))
     setResetCount(prev => prev + 1)
-    setMessage('Toys refreshed!')
-    setTimeout(() => setMessage(''), 2000)
+    setToast('🦀 FRESH MEAT!!!')
   }
 
   const handleTurnEnd = () => {
     setPlaying(false)
   }
 
+  const dropTaunts = [
+    '😂 Butter fingers!',
+    '🫠 Oops... slippery little guy',
+    '💀 The claw has spoken',
+    '🤡 skill issue tbh',
+    '😈 Mine now hehe',
+    '🗑️ Back to the pile!',
+    '👋 Bye bye toy~',
+    '💩 Rigged? Nah you just suck',
+    '😭 Cry about it lol',
+    '🤏 Almost had it... NOT',
+  ]
+
+  const handleDrop = () => {
+    const taunt = dropTaunts[Math.floor(Math.random() * dropTaunts.length)]
+    setToast(taunt)
+  }
+
+  const successMessages = [
+    '🙄 Finally, took you long enough',
+    '🥱 Wow~~',
+    '🎁 Congrats on your participation trophy',
+    '🐌 Slowest win I\'ve ever seen',
+    '🤷 I let you have that one',
+    '😏 Don\'t get used to it',
+    '🪫 Running on beginner\'s luck',
+    '👶🏻 Pure RRNG, zero skill',
+    '👀 BRUH',
+  ]
+
+  const handleSuccess = () => {
+    const msg = successMessages[Math.floor(Math.random() * successMessages.length)]
+    setToast(msg)
+  }
+
   const canPlay = !playing && coins !== null && coins > 0
   const canRefresh = !playing && coins !== null && coins >= 5
 
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return
+    const timeout = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(timeout)
+  }, [toast])
+
   return (
     <div className="h-screen bg-base-900 flex flex-col pb-20 relative">
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+            className="fixed bottom-24 inset-x-0 mx-auto w-fit z-[70] px-5 py-2.5 bg-base-800/90 backdrop-blur-sm border border-neon-cyan/20 rounded-2xl text-white text-sm font-body shadow-lg max-w-[85vw] text-center"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="absolute inset-0 pointer-events-none">
         <DotGrid dotSize={6} gap={20} baseColor="#271E37" activeColor="#5227FF" proximity={150} shockRadius={250} shockStrength={4} returnDuration={1.0} />
       </div>
@@ -133,7 +191,7 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
       </div>
 
       <div className="flex-1 min-h-0 max-w-lg mx-auto w-full flex items-center justify-center -mt-10 sm:-mt-4">
-        <ClawMachine key={seed} playable={playing} onTurnEnd={handleTurnEnd} userId={userId} active={active} seed={seed} />
+        <ClawMachine key={seed} playable={playing} onTurnEnd={handleTurnEnd} onDrop={handleDrop} onSuccess={handleSuccess} userId={userId} active={active} seed={seed} />
       </div>
 
       <BottomNavBar />

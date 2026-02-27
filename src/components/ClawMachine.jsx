@@ -15,7 +15,7 @@ const adjustAngle = (angle) => {
   return a < 0 ? a + 360 : a
 }
 
-export default function ClawMachine({ playable = true, onTurnEnd, userId, active = true, seed }) {
+export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSuccess, userId, active = true, seed }) {
   const boxRef = useRef(null)
   const machineRef = useRef(null)
   const machineTopRef = useRef(null)
@@ -313,6 +313,8 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
         moveTime: 50,
       })
       ;[vertRail, armJoint, arm].forEach((obj) => (obj.moveWith[0] = null))
+      // Call success callback - toy made it to the chute!
+      onSuccess?.()
     }
     setTimeout(() => {
       arm.el.classList.remove('open')
@@ -356,7 +358,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
           // Only drop if shadow is NOT over the chute
           if (!isOverChute) {
             // 30% chance to drop
-            if (Math.random() < 1) {
+            if (Math.random() <= 0.3) {
               dropToyToOriginal()
             }
           }
@@ -378,6 +380,9 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
       toy.el.style.setProperty('--rotate-angle', '0deg')
       toy.transformOrigin = 'center'
       applyStyles(toy)
+
+      // Call onDrop callback for toast
+      onDrop?.()
 
       // Animate toy falling to original y but keep current x
       const startY = toy.y
