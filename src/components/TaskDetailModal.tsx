@@ -64,12 +64,22 @@ export function TaskDetailModal({
     onClose()
   }
 
-  const handleReminderToggle = () => {
+  const handleReminderToggle = async () => {
     const next = !reminderEnabled
     setReminderEnabled(next)
     if (!next) {
       setReminderValue('')
       onSetReminder(task.id, null)
+      // Also clear recurrence when reminder is turned off
+      if (recurrenceConfig) {
+        setRecurrenceConfig(null)
+        try {
+          await removeRecurrence(task.id)
+          onRecurrenceChange?.()
+        } catch (err) {
+          console.error('Failed to remove recurrence:', err)
+        }
+      }
     }
   }
 
