@@ -32,6 +32,20 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Subtle gradient background for mobile (when DotGrid is disabled) */
+@media (max-width: 767px) {
+  .bg-gradient-mobile {
+    background: linear-gradient(
+      160deg,
+      #0a1628 0%,
+      #0f1a2e 25%,
+      #12162d 50%,
+      #0d1424 75%,
+      #0a1628 100%
+    );
+  }
+}
+
 h1, h2, h3, h4, h5, h6 {
   @apply font-pixel;
 }

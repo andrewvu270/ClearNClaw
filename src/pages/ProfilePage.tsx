@@ -159,7 +159,7 @@ export function ProfilePage() {
   }, [grouped])
 
   return (
-    <div className="min-h-screen bg-base-900 pb-20 relative">
+    <div className="min-h-screen bg-base-900 bg-gradient-mobile pb-20 relative">
       <div className="absolute inset-0 pointer-events-none">
         <DotGrid dotSize={6} gap={20} baseColor="#271E37" activeColor="#5227FF" proximity={150} shockRadius={250} shockStrength={4} returnDuration={1.0} />
       </div>
