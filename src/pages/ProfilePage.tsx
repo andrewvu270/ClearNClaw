@@ -41,12 +41,19 @@ export function ProfilePage() {
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
   const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string; isRare?: boolean; isElectric?: boolean; group?: string } | null>(null)
   const [dataLoaded, setDataLoaded] = useState(false)
-  const [pushSupported] = useState(() => isPushSupported())
+  const [pushSupported, setPushSupported] = useState(() => isPushSupported())
   const [pushEnabled, setPushEnabled] = useState(false)
   const [pushFrequency, setPushFrequency] = useState<string | null>(null)
   const [pushLoading, setPushLoading] = useState(false)
   const [userId, setUserId] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
+
+  // Re-check push support when settings opens (iOS may enable it after PWA install)
+  useEffect(() => {
+    if (settingsOpen) {
+      setPushSupported(isPushSupported())
+    }
+  }, [settingsOpen])
 
   // Lock body scroll when popup is open
   useEffect(() => {

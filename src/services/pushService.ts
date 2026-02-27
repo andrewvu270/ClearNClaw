@@ -4,11 +4,24 @@ import { supabase } from '../lib/supabase'
  * Checks if the browser supports push notifications via the Push API.
  */
 export function isPushSupported(): boolean {
-  return (
-    'serviceWorker' in navigator &&
-    'PushManager' in window &&
-    'Notification' in window
-  )
+  // Basic feature detection
+  if (
+    !('serviceWorker' in navigator) ||
+    !('PushManager' in window) ||
+    !('Notification' in window)
+  ) {
+    return false
+  }
+
+  // On iOS, check if we're in standalone mode (PWA) - push only works in PWA mode
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+  if (isIOS) {
+    const isStandalone = (window.navigator as Navigator & { standalone?: boolean }).standalone === true ||
+      window.matchMedia('(display-mode: standalone)').matches
+    return isStandalone
+  }
+
+  return true
 }
 
 /**
