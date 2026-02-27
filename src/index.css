@@ -8,8 +8,8 @@
   --color-neon-pink: #ff6b9d;
   --color-neon-yellow: #ffe66d;
   --color-neon-green: #39ff14;
-  --color-base-900: #0a1628;
-  --color-base-800: #0f2035;
+  --color-base-900: #1a1a2e;
+  --color-base-800: #222240;
   --transition-duration: 1;
 }
 
@@ -30,20 +30,6 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* Subtle gradient background for mobile (when DotGrid is disabled) */
-@media (max-width: 767px) {
-  .bg-gradient-mobile {
-    background: linear-gradient(
-      160deg,
-      #0a1628 0%,
-      #0f1a2e 25%,
-      #12162d 50%,
-      #0d1424 75%,
-      #0a1628 100%
-    );
-  }
 }
 
 h1, h2, h3, h4, h5, h6 {
