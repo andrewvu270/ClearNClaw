@@ -331,11 +331,36 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
       ;[vertRail, armJoint, arm].forEach((obj) => (obj.moveWith[0] = g.targetToy))
       setRotateAngle(g.targetToy)
       g.targetToy.el.classList.add('grabbed')
-      
-      // Schedule random drop between now and ~3 seconds (before turn ends)
+
+      // Schedule potential drop check - 30% chance but only if shadow not over chute
       const randomDelay = Math.random() * 3000
       setTimeout(() => {
-        dropToyToOriginal()
+        if (g.targetToy) {
+          // Chute opening (bottom-left corner)
+          // Width: 44px * m, Height: 24px * m
+          const m = 2.3 // multiplier from CSS
+          const chuteMinX = 0
+          const chuteMaxX = 44 * m // ~101px
+          const chuteMinY = g.machineHeight - 24 * m // top of chute
+          const chuteMaxY = g.machineHeight // bottom of chute
+
+          // Shadow position (with -15px X offset from CSS margin-left)
+          const shadowX = armJoint.x - 15
+          const shadowY = armJoint.y + g.maxArmLength // shadow follows arm Y + maxArmLength
+
+          // Check if shadow is over the chute (both X and Y must be in range)
+          const isOverChuteX = shadowX >= chuteMinX && shadowX <= chuteMaxX
+          const isOverChuteY = shadowY >= chuteMinY && shadowY <= chuteMaxY
+          const isOverChute = isOverChuteX && isOverChuteY
+
+          // Only drop if shadow is NOT over the chute
+          if (!isOverChute) {
+            // 30% chance to drop
+            if (Math.random() < 1) {
+              dropToyToOriginal()
+            }
+          }
+        }
       }, randomDelay)
     } else {
       arm.el.classList.add('missed')
@@ -391,7 +416,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, userId, active
     moveObject(vertRail, {
       moveKey: 'x',
       target: g.machineWidth - g.objects.armJoint.w - MACHINE_BUFFER.x,
-      moveTime: 50,
+      moveTime: 45,
       next: stopHoriBtnAndActivateVertBtn,
     })
   }
