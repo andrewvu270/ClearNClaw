@@ -15,7 +15,8 @@ import { TaskGroupSection } from '../components/TaskGroupSection'
 import { TaskDetailModal } from '../components/TaskDetailModal'
 import { FocusView } from '../components/FocusView'
 import { Toast } from '../components/Toast'
-import type { BigTask, RepeatOption } from '../types'
+import { checkAndResetRecurringTasks } from '../services/recurrenceService'
+import type { BigTask } from '../types'
 
 export function TasksPage() {
   const [tasks, setTasks] = useState<BigTask[]>([])
@@ -89,6 +90,12 @@ export function TasksPage() {
 
   const fetchTasks = useCallback(async () => {
     if (!userId) return
+    // Reset overdue recurring tasks before fetching
+    try {
+      await checkAndResetRecurringTasks(userId)
+    } catch (err) {
+      console.warn('Failed to reset recurring tasks:', err)
+    }
     const [active, done] = await Promise.all([
       taskService.getBigTasks(userId, false),
       taskService.getBigTasks(userId, true),
@@ -234,11 +241,6 @@ export function TasksPage() {
     await fetchTasks()
   }
 
-  const handleSetRepeat = async (taskId: string, repeat: RepeatOption | null) => {
-    await taskService.updateBigTaskRepeatSchedule(taskId, repeat)
-    await fetchTasks()
-  }
-
   return (
     <div className="h-screen bg-base-900 flex flex-col relative">
       {/* Dot grid background */}
@@ -254,7 +256,7 @@ export function TasksPage() {
       {/* Scrollable task stack */}
       <div className="flex-1 min-h-0 relative z-10">
         <div className="h-full">
-          <div className={`max-w-lg mx-auto px-4 pt-4 overflow-y-auto h-full ${showNowActiveBar ? 'pb-40' : 'pb-24'}`}>
+          <div className={`max-w-lg mx-auto px-4 pt-8 overflow-y-auto h-full ${showNowActiveBar ? 'pb-40' : 'pb-24'}`}>
             {!dataLoaded ? (
               <div className="flex justify-center pt-16">
                 <span className="text-gray-600 text-xs animate-pulse">Loading...</span>
@@ -367,7 +369,7 @@ export function TasksPage() {
         onClose={() => setDetailModalTask(null)}
         onDelete={handleDelete}
         onSetReminder={handleSetReminder}
-        onSetRepeat={handleSetRepeat}
+        onRecurrenceChange={fetchTasks}
       />
 
       {/* Toast notification */}

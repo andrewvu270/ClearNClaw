@@ -288,52 +288,86 @@
     - Update `profiles.last_session_date` to current timestamp when Tasks page loads (or on auth session restore)
     - _Requirements: 5.2_
 
-- [ ] 9. Checkpoint — Make sure all tests are passing
+- [x] 9. Checkpoint — Make sure all tests are passing
+
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 10. Recurring Tasks
-  - [ ] 10.1 Create `recurring_tasks` table via Supabase migration
+- [x] 10. Recurring Tasks
+
+
+
+
+
+  - [x] 10.1 Create `recurring_tasks` table via Supabase migration
+
+
     - Table with `big_task_id`, `recurrence_type`, `custom_days`, `reminder_time`, `streak`, `last_completed_at`, `last_reset_at`
     - RLS policy: users manage own recurring tasks (via big_tasks join)
     - _Requirements: 6.1, 6.7_
-  - [ ] 10.2 Create recurrence utility functions (`src/utils/recurrence.ts`)
+  - [x] 10.2 Create recurrence utility functions (`src/utils/recurrence.ts`)
+
+
     - `isDueToday(config, dayOfWeek)` — checks if task should show today based on schedule
     - `getNextResetDate(config)` — calculates next reset timestamp
     - _Requirements: 6.2, 6.6_
-  - [ ] 10.3 Write property test for recurrence schedule "due today" correctness (Property 11)
+  - [x] 10.3 Write property test for recurrence schedule "due today" correctness (Property 11)
+
+
     - **Property 11: Recurrence schedule "due today" correctness**
     - **Validates: Requirements 6.6**
-  - [ ] 10.4 Create recurrence service (`src/services/recurrenceService.ts`)
+  - [x] 10.4 Create recurrence service (`src/services/recurrenceService.ts`)
+
+
     - `setRecurrence`, `removeRecurrence`, `getRecurringTasksDueToday`
     - `checkAndResetRecurringTasks` — on app open, reset overdue tasks, handle streak
     - Uses client local date for timezone correctness
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.6, 6.7, 6.8_
-  - [ ] 10.5 Write property test for recurring task reset (Property 9)
+  - [x] 10.5 Write property test for recurring task reset (Property 9)
+
+
     - **Property 9: Recurring task reset clears all Sub-Tasks**
     - **Validates: Requirements 6.2**
-  - [ ] 10.6 Write property test for streak consistency (Property 10)
+  - [x] 10.6 Write property test for streak consistency (Property 10)
+
+
     - **Property 10: Streak consistency**
     - **Validates: Requirements 6.3, 6.4**
-  - [ ] 10.7 Write property test for remove recurrence preserves state (Property 12)
+  - [x] 10.7 Write property test for remove recurrence preserves state (Property 12)
+
+
     - **Property 12: Remove recurrence preserves Sub-Task states**
     - **Validates: Requirements 6.8**
-  - [ ] 10.8 Extend `complete_subtask_and_check` RPC to handle recurring task streak increment
+  - [x] 10.8 Extend `complete_subtask_and_check` RPC to handle recurring task streak increment
+
+
     - Add streak increment logic to the existing RPC from step 1.5 (do not replace, extend)
     - Check if big_task has a recurring_tasks entry, increment streak on completion
     - _Requirements: 6.3_
-  - [ ] 10.9 Build `RecurrenceConfig` component
+  - [x] 10.9 Build `RecurrenceConfig` component
+
+
     - "Make recurring" toggle + schedule picker (daily/weekdays/weekly/custom days)
     - Optional reminder time input
     - _Requirements: 6.1, 6.9_
-  - [ ] 10.10 Build `StreakBadge` component
+  - [x] 10.10 Build `StreakBadge` component
+
+
     - Small badge showing 🔥 + streak count
     - _Requirements: 6.5_
-  - [ ] 10.11 Integrate recurring task UI into `TaskInputForm`, `TaskCard`, and `TasksPage`
+  - [x] 10.11 Integrate recurring task UI into `TaskInputForm`, `TaskCard`, and `TasksPage`
+
+
     - TaskInputForm: add RecurrenceConfig below energy tag picker
     - TaskCard: show recurring icon + StreakBadge
     - TasksPage: call `checkAndResetRecurringTasks` on mount, filter recurring tasks due today
     - _Requirements: 6.1, 6.5, 6.6_
-  - [ ] 10.12 Integrate recurring task reminders with push notification system
+  - [x] 10.12 Integrate recurring task reminders with push notification system
+
+
     - When reminder_time is set, schedule push notification via Edge Function
     - _Requirements: 6.9_
 

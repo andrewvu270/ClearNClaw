@@ -101,7 +101,7 @@ export function FocusView({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: '100%' }}
       transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-      className="fixed inset-0 z-50 bg-base-900 overflow-y-auto"
+      className="fixed inset-0 z-[60] bg-base-900 overflow-y-auto"
       data-testid="focus-view"
     >
       <div className="absolute inset-0 pointer-events-none">
@@ -116,16 +116,24 @@ export function FocusView({
       )}
 
       <div className="relative z-10 max-w-lg mx-auto px-4 pt-6 pb-24">
-        {/* Back button */}
-        <div className="flex items-center justify-between mb-1">
+        {/* Swipe handle + Back button */}
+        <motion.div
+          drag="y"
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.3 }}
+          onDragEnd={(_e, info) => {
+            if (info.offset.y > 100) onClose()
+          }}
+          className="flex items-center justify-between mb-1 touch-none"
+        >
           <button
             onClick={onClose}
-            className="min-w-[52px] min-h-[52px] flex items-center justify-center text-gray-400 hover:text-white transition-colors text-2xl"
+            className="min-w-[60px] min-h-[60px] flex items-center justify-center text-gray-400 hover:text-white transition-colors text-4xl font-pixel"
             aria-label="Back"
           >
             ←
           </button>
-        </div>
+        </motion.div>
 
         {/* Task name */}
         <div className="text-center mb-1">
@@ -183,7 +191,7 @@ export function FocusView({
                 className="flex items-center justify-center text-gray-300 hover:text-white transition-colors text-lg"
                 aria-label="Reset timer"
               >
-                ↻
+                🔄
               </button>
             </div>
           ) : !readOnly && (

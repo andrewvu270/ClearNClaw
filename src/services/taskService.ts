@@ -1,14 +1,31 @@
 import { supabase } from '../lib/supabase'
-import type { BigTask, SubTask, RepeatOption } from '../types'
+import type { BigTask, SubTask, RecurrenceInfo } from '../types'
 import type { EnergyTag } from '../utils/energyTag'
 import { parseEnergyTag } from '../utils/energyTag'
+import type { RecurrenceType } from '../utils/recurrence'
 
-function parseRepeatSchedule(value: unknown): RepeatOption | null {
-  if (value === 'daily' || value === 'weekly' || value === 'custom') return value
-  return null
+function mapRecurrenceInfo(row: Record<string, unknown> | null | undefined): RecurrenceInfo | null {
+  if (!row) return null
+  return {
+    id: row.id as string,
+    type: row.recurrence_type as RecurrenceType,
+    customDays: (row.custom_days as number[] | null) ?? undefined,
+    streak: (row.streak as number) ?? 0,
+    lastCompletedAt: (row.last_completed_at as string) ?? null,
+    lastResetAt: (row.last_reset_at as string) ?? null,
+  }
 }
 
 function mapBigTask(row: Record<string, unknown>, subTasks: SubTask[] = []): BigTask {
+  // recurring_tasks may be an array (from join) or a single object
+  const recurrenceRaw = row.recurring_tasks
+  let recurrence: RecurrenceInfo | null = null
+  if (Array.isArray(recurrenceRaw) && recurrenceRaw.length > 0) {
+    recurrence = mapRecurrenceInfo(recurrenceRaw[0] as Record<string, unknown>)
+  } else if (recurrenceRaw && typeof recurrenceRaw === 'object' && !Array.isArray(recurrenceRaw)) {
+    recurrence = mapRecurrenceInfo(recurrenceRaw as Record<string, unknown>)
+  }
+
   return {
     id: row.id as string,
     userId: row.user_id as string,
@@ -20,7 +37,7 @@ function mapBigTask(row: Record<string, unknown>, subTasks: SubTask[] = []): Big
     subTasks,
     energyTag: parseEnergyTag(row.energy_tag as string | null),
     reminderAt: (row.reminder_at as string) ?? null,
-    repeatSchedule: parseRepeatSchedule(row.repeat_schedule),
+    recurrence,
   }
 }
 
@@ -70,7 +87,7 @@ export async function createBigTask(
 export async function getBigTasks(userId: string, completed: boolean): Promise<BigTask[]> {
   const { data: tasks, error } = await supabase
     .from('big_tasks')
-    .select('*, sub_tasks(*)')
+    .select('*, sub_tasks(*), recurring_tasks(*)')
     .eq('user_id', userId)
     .eq('completed', completed)
     .order('created_at', { ascending: false })
@@ -179,15 +196,6 @@ export async function updateBigTaskReminder(taskId: string, reminderAt: string |
   if (error) throw error
 }
 
-export async function updateBigTaskRepeatSchedule(taskId: string, repeatSchedule: string | null): Promise<void> {
-  const { error } = await supabase
-    .from('big_tasks')
-    .update({ repeat_schedule: repeatSchedule })
-    .eq('id', taskId)
-
-  if (error) throw error
-}
-
 export async function addSubTask(bigTaskId: string, name: string): Promise<SubTask> {
   // Get current max sort_order
   const { data: existing } = await supabase
@@ -225,13 +233,12 @@ export async function createDemoTaskIfNeeded(userId: string): Promise<void> {
   if (count === 0) {
     await createBigTask(
       userId,
-      '🎮 Build Your First Win',
+      'Build Your First Win',
       '🎮',
       [
-        { name: 'Press Start', emoji: '▶️' },
-        { name: 'Complete 1 action', emoji: '✅' },
-        { name: 'Win your first coin', emoji: '🪙' },
-        { name: 'Play claw machine', emoji: '🕹️' },
+        { name: 'Start a timer for your focus task', emoji: '⏱️' },
+        { name: 'Tap task or subtask name/emoji to edit', emoji: '✏️' },
+        { name: 'Complete all subtasks to earn coins & play claw machine', emoji: '🪙' },
       ],
       'low'
     )

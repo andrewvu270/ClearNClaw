@@ -1,4 +1,5 @@
 import type { BigTask } from '../types'
+import { StreakBadge } from './StreakBadge'
 
 interface CompactTaskCardProps {
   task: BigTask
@@ -10,6 +11,7 @@ export function CompactTaskCard({ task, onCardClick, onSettingsClick }: CompactT
   const completedCount = task.subTasks.filter(st => st.completed).length
   const totalCount = task.subTasks.length
   const isDone = task.completed || completedCount === totalCount
+  const isRecurring = !!task.recurrence
 
   return (
     <div className="flex items-center gap-2 group min-h-[48px]">
@@ -23,7 +25,7 @@ export function CompactTaskCard({ task, onCardClick, onSettingsClick }: CompactT
         <span className="text-xl select-none leading-none">{task.emoji}</span>
       </button>
 
-      {/* Task name */}
+      {/* Task name + recurring indicators */}
       <button
         onClick={() => onCardClick(task)}
         className="flex-1 min-w-0 text-left"
@@ -32,11 +34,17 @@ export function CompactTaskCard({ task, onCardClick, onSettingsClick }: CompactT
         <span className={`text-base break-words ${
           isDone ? 'text-gray-500 line-through' : 'text-gray-200'
         }`}>
+          {isRecurring && <span className="mr-1" aria-label="Recurring task">🔁</span>}
           {task.name}
         </span>
+        {isRecurring && task.recurrence && task.recurrence.streak > 0 && (
+          <span className="ml-1.5 inline-block align-middle">
+            <StreakBadge streak={task.recurrence.streak} />
+          </span>
+        )}
       </button>
 
-      {/* Progress count — fixed position next to info icon */}
+      {/* Progress count */}
       <span className="text-xs text-gray-500 shrink-0 tabular-nums mr-1">
         {completedCount}/{totalCount}
       </span>

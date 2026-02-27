@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
 import { groupTasks } from '../taskGrouping'
-import type { RepeatOption } from '../../types'
 import type { EnergyTag } from '../energyTag'
 
 /**
@@ -37,7 +36,6 @@ const bigTaskArb = fc.record({
   subTasks: fc.array(subTaskArb, { minLength: 0, maxLength: 10 }),
   energyTag: energyTagArb,
   reminderAt: fc.option(fc.date().map(d => d.toISOString()), { nil: null }),
-  repeatSchedule: fc.option(fc.constantFrom<RepeatOption>('daily', 'weekly', 'custom'), { nil: null }),
 })
 
 describe('taskGrouping', () => {

@@ -18,8 +18,9 @@ function AuthListener() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        ensureProfile(session.user.id).catch(console.error)
-        navigate('/tasks', { replace: true })
+        ensureProfile(session.user.id)
+          .catch(console.error)
+          .finally(() => navigate('/tasks', { replace: true }))
       }
       if (event === 'SIGNED_OUT' || (event === 'TOKEN_REFRESHED' && !session)) {
         navigate('/', { replace: true })

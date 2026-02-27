@@ -1,6 +1,14 @@
 import type { EnergyTag } from '../utils/energyTag'
+import type { RecurrenceType } from '../utils/recurrence'
 
-export type RepeatOption = 'daily' | 'weekly' | 'custom'
+export interface RecurrenceInfo {
+  id: string
+  type: RecurrenceType
+  customDays?: number[]
+  streak: number
+  lastCompletedAt: string | null
+  lastResetAt: string | null
+}
 
 export interface BigTask {
   id: string
@@ -13,7 +21,7 @@ export interface BigTask {
   subTasks: SubTask[]
   energyTag: EnergyTag
   reminderAt: string | null
-  repeatSchedule: RepeatOption | null
+  recurrence?: RecurrenceInfo | null
 }
 
 export interface SubTask {

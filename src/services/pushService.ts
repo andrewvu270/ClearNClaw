@@ -105,6 +105,47 @@ export async function updatePushFrequency(
 }
 
 /**
+ * Syncs the DB push_enabled flag with the actual browser subscription state.
+ * If the DB says enabled but the browser has no active subscription, disables it in the DB.
+ * Returns the corrected push_enabled value.
+ */
+export async function syncPushState(userId: string): Promise<{ enabled: boolean; frequency: string | null }> {
+  // Fetch current DB state
+  const { data } = await supabase
+    .from('profiles')
+    .select('push_enabled, push_frequency')
+    .eq('id', userId)
+    .single()
+
+  const dbEnabled = data?.push_enabled ?? false
+  const dbFrequency = data?.push_frequency ?? null
+
+  if (!dbEnabled) return { enabled: false, frequency: dbFrequency }
+
+  // DB says enabled — verify browser actually has a subscription
+  if (!isPushSupported()) {
+    await supabase.from('profiles').update({ push_enabled: false, push_frequency: null }).eq('id', userId)
+    return { enabled: false, frequency: null }
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.ready
+    const subscription = await registration.pushManager.getSubscription()
+
+    if (!subscription) {
+      // No active subscription — stale state, disable in DB and clean up
+      await supabase.from('push_subscriptions').delete().eq('user_id', userId)
+      await supabase.from('profiles').update({ push_enabled: false, push_frequency: null }).eq('id', userId)
+      return { enabled: false, frequency: null }
+    }
+  } catch (err) {
+    console.warn('Failed to check push subscription:', err)
+  }
+
+  return { enabled: dbEnabled, frequency: dbFrequency }
+}
+
+/**
  * Selects the best task to nudge the user about.
  * Returns the active Big Task with the fewest remaining incomplete sub-tasks.
  */

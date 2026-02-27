@@ -94,9 +94,9 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
         <DotGrid dotSize={6} gap={20} baseColor="#271E37" activeColor="#5227FF" proximity={150} shockRadius={250} shockStrength={4} returnDuration={1.0} />
       </div>
       <div className="max-w-lg mx-auto px-4 pt-6 shrink-0 relative z-10">
-        <h1 className="text-neon-cyan text-xs text-center mb-2 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
+        <h1 className="text-neon-cyan text-xs text-center mb-6 font-pixel opacity-0 pointer-events-none">Claw!!!</h1>
 
-        <div className="flex items-center justify-center gap-3 mb-2 mt-4">
+        <div className="flex items-center justify-center gap-3 mb-2">
           <div className="flex items-center gap-2">
             <span className="text-2xl">🪙</span>
             <span className="font-pixel text-neon-yellow text-sm">
