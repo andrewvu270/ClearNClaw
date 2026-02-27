@@ -168,6 +168,12 @@ export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSucc
     el.style.setProperty('--s-grabbed', `url(${size.sGrabbed || size.sNormal})`)
     el.style.setProperty('--s-collected', `url(${size.sCollected || size.sNormal})`)
 
+    // Preload grabbed sprite to prevent glitch when toy is grabbed
+    if (size.sGrabbed && size.sGrabbed !== size.sNormal) {
+      const preloadImg = new Image()
+      preloadImg.src = size.sGrabbed
+    }
+
     boxRef.current.append(el)
 
     const toy = {
