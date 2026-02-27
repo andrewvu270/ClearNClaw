@@ -61,10 +61,7 @@ export function RecurrenceConfig({ value, onChange, disabled = false }: Recurren
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">🔁</span>
-          <span className="text-gray-200 font-medium">Repeat</span>
-        </div>
+        <span className="text-gray-200 font-medium">Repeat</span>
         <button
           type="button"
           onClick={handleToggle}
@@ -85,7 +82,7 @@ export function RecurrenceConfig({ value, onChange, disabled = false }: Recurren
       </div>
 
       {isRecurring && value && (
-        <div className="space-y-3 ml-8">
+        <div className="space-y-3 mt-3">
           {/* Schedule type picker */}
           <div className="flex gap-1 flex-wrap">
             {SCHEDULE_OPTIONS.map(({ type, label }) => (

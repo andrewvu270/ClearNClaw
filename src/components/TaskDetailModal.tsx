@@ -82,6 +82,11 @@ export function TaskDetailModal({
           console.error('Failed to remove recurrence:', err)
         }
       }
+    } else {
+      // Pre-fill with current datetime when toggling on
+      const now = toLocalDatetime(new Date().toISOString())
+      setReminderValue(now)
+      onSetReminder(task.id, new Date(now).toISOString())
     }
   }
 
@@ -167,10 +172,7 @@ export function TaskDetailModal({
                 {/* Reminder toggle */}
                 <div data-testid="settings-reminder">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-lg ${isTaskCompleted ? 'opacity-50' : ''}`}>🔔</span>
-                      <span className={`font-medium ${isTaskCompleted ? 'text-gray-500' : 'text-gray-200'}`}>Reminder</span>
-                    </div>
+                    <span className={`font-medium ${isTaskCompleted ? 'text-gray-500' : 'text-gray-200'}`}>Reminder</span>
                     <button
                       onClick={handleReminderToggle}
                       disabled={isTaskCompleted}
@@ -190,12 +192,12 @@ export function TaskDetailModal({
                     </button>
                   </div>
                   {isTaskCompleted && (
-                    <p className="text-gray-500 text-xs mt-2 ml-8">
+                    <p className="text-gray-500 text-xs mt-2">
                       Reminders are disabled for completed tasks
                     </p>
                   )}
                   {!isTaskCompleted && reminderEnabled && (
-                    <div className="mt-3 ml-8">
+                    <div className="mt-3">
                       {!pushActive && (
                         <p className="text-neon-pink text-xs mb-2">
                           ⚠️ Enable Push Notifications in Profile → Settings for reminders to work
@@ -204,6 +206,7 @@ export function TaskDetailModal({
                       <input
                         type="datetime-local"
                         value={reminderValue}
+                        min={toLocalDatetime(new Date().toISOString())}
                         onChange={(e) => handleReminderChange(e.target.value)}
                         data-testid="settings-reminder-picker"
                         className="w-full bg-base-800 text-gray-200 border border-gray-600 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-neon-cyan"
@@ -229,10 +232,9 @@ export function TaskDetailModal({
                   <button
                     onClick={handleDelete}
                     data-testid="settings-delete-btn"
-                    className="w-full px-6 py-3 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors font-medium flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors font-medium"
                   >
-                    <span>🗑</span>
-                    <span>Delete Task</span>
+                    Delete Task
                   </button>
                 </div>
               </div>

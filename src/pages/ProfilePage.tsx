@@ -374,10 +374,7 @@ export function ProfilePage() {
                 <div className="max-w-lg mx-auto px-6 space-y-4">
                   {/* Low Stim Mode */}
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg">🎚️</span>
-                      <span className="text-gray-200 font-medium">Low Stim Mode</span>
-                    </div>
+                    <span className="text-gray-200 font-medium">Low Stim Mode</span>
                     <button
                       onClick={toggle}
                       className={`relative w-12 h-7 rounded-full transition-colors ${
@@ -399,10 +396,7 @@ export function ProfilePage() {
                   {pushSupported && (
                     <div>
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-lg">🔔</span>
-                          <span className="text-gray-200 font-medium">Push Notifications</span>
-                        </div>
+                        <span className="text-gray-200 font-medium">Push Notifications</span>
                         <button
                           onClick={handlePushToggle}
                           disabled={pushLoading}
@@ -485,10 +479,9 @@ export function ProfilePage() {
                   <div className="pt-2">
                     <button
                       onClick={handleLogout}
-                      className="w-full px-6 py-3 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors font-medium flex items-center justify-center gap-2"
+                      className="w-full px-6 py-3 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 transition-colors font-medium"
                     >
-                      <span>🚪</span>
-                      <span>Log out</span>
+                      Log out
                     </button>
                   </div>
                 </div>

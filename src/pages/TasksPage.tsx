@@ -283,7 +283,7 @@ export function TasksPage() {
                         />
                         <TaskGroupSection
                           title="Active"
-                          emoji="⚡"
+                          emoji="✨"
                           tasks={grouped.active}
                           onCardClick={handleCardClick}
                           onSettingsClick={handleSettingsClick}
