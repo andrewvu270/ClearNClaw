@@ -59,6 +59,8 @@ export function TaskDetailModal({
 
   if (!task) return null
 
+  const isTaskCompleted = task.completed || task.subTasks.every(st => st.completed)
+
   const handleDelete = () => {
     onDelete(task.id)
     onClose()
@@ -166,15 +168,16 @@ export function TaskDetailModal({
                 <div data-testid="settings-reminder">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="text-lg">🔔</span>
-                      <span className="text-gray-200 font-medium">Reminder</span>
+                      <span className={`text-lg ${isTaskCompleted ? 'opacity-50' : ''}`}>🔔</span>
+                      <span className={`font-medium ${isTaskCompleted ? 'text-gray-500' : 'text-gray-200'}`}>Reminder</span>
                     </div>
                     <button
                       onClick={handleReminderToggle}
+                      disabled={isTaskCompleted}
                       data-testid="settings-reminder-toggle"
                       className={`relative w-12 h-7 rounded-full transition-colors ${
                         reminderEnabled ? 'bg-neon-cyan' : 'bg-gray-600'
-                      }`}
+                      } ${isTaskCompleted ? 'opacity-50 cursor-not-allowed' : ''}`}
                       role="switch"
                       aria-checked={reminderEnabled}
                       aria-label="Toggle reminder"
@@ -186,7 +189,12 @@ export function TaskDetailModal({
                       />
                     </button>
                   </div>
-                  {reminderEnabled && (
+                  {isTaskCompleted && (
+                    <p className="text-gray-500 text-xs mt-2 ml-8">
+                      Reminders are disabled for completed tasks
+                    </p>
+                  )}
+                  {!isTaskCompleted && reminderEnabled && (
                     <div className="mt-3 ml-8">
                       {!pushActive && (
                         <p className="text-neon-pink text-xs mb-2">
@@ -204,8 +212,8 @@ export function TaskDetailModal({
                   )}
                 </div>
 
-                {/* Recurrence config (only show when reminder is set) */}
-                {reminderEnabled && reminderValue && (
+                {/* Recurrence config (only show when reminder is set and task not completed) */}
+                {!isTaskCompleted && reminderEnabled && reminderValue && (
                   <div data-testid="settings-recurrence">
                     <RecurrenceConfigComponent
                       value={recurrenceConfig}
