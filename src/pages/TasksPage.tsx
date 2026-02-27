@@ -27,6 +27,7 @@ export function TasksPage() {
   const [restoredFocus, setRestoredFocus] = useState(false)
   const [detailModalTask, setDetailModalTask] = useState<BigTask | null>(null)
   const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [showClearConfirm, setShowClearConfirm] = useState(false)
   
   const timer = useFocusTimer()
   const location = useLocation()
@@ -241,6 +242,13 @@ export function TasksPage() {
     await fetchTasks()
   }
 
+  const handleClearDone = async () => {
+    if (!userId) return
+    await taskService.clearCompletedTasks(userId)
+    setShowClearConfirm(false)
+    await fetchTasks()
+  }
+
   return (
     <div className="h-screen bg-base-900 flex flex-col relative">
       {/* Dot grid background */}
@@ -294,6 +302,7 @@ export function TasksPage() {
                           tasks={grouped.done}
                           onCardClick={handleCardClick}
                           onSettingsClick={handleSettingsClick}
+                          onClear={() => setShowClearConfirm(true)}
                         />
                       </>
                     )
@@ -371,6 +380,44 @@ export function TasksPage() {
         onSetReminder={handleSetReminder}
         onRecurrenceChange={fetchTasks}
       />
+
+      {/* Clear done confirm modal */}
+      <AnimatePresence>
+        {showClearConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 px-6"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              className="bg-base-800 border border-base-700 rounded-2xl p-6 max-w-sm w-full text-center"
+            >
+              <p className="text-4xl mb-3">🗑️</p>
+              <p className="text-white font-body text-sm mb-1">Clear all done tasks?</p>
+              <p className="text-gray-400 text-xs mb-6">This will permanently delete all completed tasks.</p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowClearConfirm(false)}
+                  className="flex-1 min-h-[44px] text-sm text-gray-400 border border-base-700 rounded-xl hover:bg-base-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearDone}
+                  className="flex-1 min-h-[44px] text-sm text-red-400 border border-red-400/30 rounded-xl bg-red-400/10 hover:bg-red-400/20 transition-colors"
+                >
+                  Clear All
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Toast notification */}
       <Toast message={toastMessage} onDismiss={() => setToastMessage(null)} />

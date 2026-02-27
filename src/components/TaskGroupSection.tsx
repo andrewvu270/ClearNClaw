@@ -9,6 +9,7 @@ interface TaskGroupSectionProps {
   tasks: BigTask[]
   onCardClick: (task: BigTask) => void
   onSettingsClick: (task: BigTask) => void
+  onClear?: () => void
 }
 
 const COLLAPSED_GROUPS_KEY = 'collapsedTaskGroups'
@@ -32,6 +33,7 @@ export function TaskGroupSection({
   tasks,
   onCardClick,
   onSettingsClick,
+  onClear,
 }: TaskGroupSectionProps) {
   const [isCollapsed, setIsCollapsed] = useState(() => getCollapsedGroups().has(title))
 
@@ -58,25 +60,37 @@ export function TaskGroupSection({
   return (
     <div className="mb-6">
       {/* Section header */}
-      <button
-        onClick={toggleCollapse}
-        className="w-full flex items-center justify-between mb-3 px-1 group"
-        aria-expanded={!isCollapsed}
-        aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${title}`}
-      >
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-3 px-1">
+        <button
+          onClick={toggleCollapse}
+          className="flex items-center gap-2 group"
+          aria-expanded={!isCollapsed}
+          aria-label={`${isCollapsed ? 'Expand' : 'Collapse'} ${title}`}
+        >
           <span className="text-xl">{emoji}</span>
           <h2 className="text-lg font-medium text-gray-200">{title}</h2>
           <span className="text-xs text-gray-500">({tasks.length})</span>
-        </div>
-        <span
-          className={`text-gray-500 transition-transform duration-200 ${
-            isCollapsed ? '-rotate-90' : 'rotate-0'
-          }`}
-        >
-          ▼
-        </span>
-      </button>
+          <span
+            className={`text-gray-500 transition-transform duration-200 ${
+              isCollapsed ? '-rotate-0' : 'rotate-180'
+            }`}
+          >
+            ▼
+          </span>
+        </button>
+        {onClear && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              onClear()
+            }}
+            className="text-xs text-gray-500 hover:text-red-400 transition-colors px-2 py-1"
+            aria-label={`Clear all ${title.toLowerCase()} tasks`}
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       {/* Task list with animation */}
       <AnimatePresence initial={false}>

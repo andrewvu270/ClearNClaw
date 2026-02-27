@@ -219,6 +219,19 @@ export async function addSubTask(bigTaskId: string, name: string): Promise<SubTa
 }
 
 /**
+ * Deletes all completed big tasks for a user.
+ */
+export async function clearCompletedTasks(userId: string): Promise<void> {
+  const { error } = await supabase
+    .from('big_tasks')
+    .delete()
+    .eq('user_id', userId)
+    .eq('completed', true)
+
+  if (error) throw error
+}
+
+/**
  * Creates a demo task for new users if they have zero big tasks.
  * Called from ensureProfile to provide immediate onboarding experience.
  */
