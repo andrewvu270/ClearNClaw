@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { isValidTaskDescription } from '../utils/validation'
+import { validateTaskDescription } from '../utils/validation'
 
 interface TaskInputFormProps {
   onSubmit: (description: string) => void
@@ -13,8 +13,9 @@ export function TaskInputForm({ onSubmit, loading = false }: TaskInputFormProps)
 
   const handleSubmit = () => {
     const trimmed = value.trim()
-    if (!isValidTaskDescription(trimmed)) {
-      setError('Please enter a task description')
+    const validation = validateTaskDescription(trimmed)
+    if (!validation.valid) {
+      setError(validation.reason || 'Please enter a valid task description')
       return
     }
     setError('')
