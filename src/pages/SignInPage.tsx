@@ -138,6 +138,8 @@ export function SignInPage() {
           <div className="space-y-3">
             <input
               type="email"
+              name="email"
+              autoComplete="email"
               value={email}
               onChange={e => { setEmail(e.target.value); setError('') }}
               onKeyDown={e => { if (e.key === 'Enter' && !loading) handleSendOtp() }}

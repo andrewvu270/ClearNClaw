@@ -112,9 +112,20 @@ export default function DotGrid({
   useEffect(() => {
     if (!circlePath || isLowStim) return
     let rafId: number
+    let lastDrawTime = 0
     const proxSq = proximity * proximity
+    // Throttle to ~20fps on mobile, 60fps on desktop
+    const isMobile = window.matchMedia('(max-width: 768px)').matches
+    const frameInterval = isMobile ? 50 : 0 // 50ms = ~20fps, 0 = no throttle
 
     const draw = () => {
+      const now = performance.now()
+      if (frameInterval && now - lastDrawTime < frameInterval) {
+        rafId = requestAnimationFrame(draw)
+        return
+      }
+      lastDrawTime = now
+
       const canvas = canvasRef.current
       if (!canvas) return
       const ctx = canvas.getContext('2d')
