@@ -59,6 +59,9 @@ export function LandingPage() {
             style={{ fontSize: 'inherit', fontFamily: 'inherit' }}
           />
         </h1>
+        <p className="text-neon-cyan text-lg md:text-xl font-pixel mb-2 tracking-widest">
+          Clear tasks. Play claw.
+        </p>
         <p className="text-gray-300 text-sm md:text-base font-body mb-12 tracking-wide">
           Task Management For Brains That Don't Do Boring
         </p>
@@ -92,7 +95,7 @@ export function LandingPage() {
           onClick={() => navigate('/sign-in')}
           className="min-h-[48px] w-full max-w-xs px-8 py-3 bg-neon-cyan/10 hover:bg-neon-cyan/20 text-neon-cyan font-pixel text-sm rounded-lg border border-neon-cyan/30 transition-all"
         >
-          get started
+          Get Started
         </button>
 
         <p className="text-gray-600 text-[10px] font-body mt-8">
