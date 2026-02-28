@@ -25,7 +25,7 @@ interface VoiceCallContextState {
   transcripts: VoiceTranscript[]
   /** Whether Vapi is available (API key configured) */
   isAvailable: boolean
-  /** Start a voice call with Law */
+  /** Start a voice call with Klaw */
   startCall: (context: AssistantContext, timerController?: TimerController) => Promise<void>
   /** End the current voice call */
   endCall: () => void
@@ -51,10 +51,10 @@ interface VoiceCallProviderProps {
 }
 
 /**
- * VoiceCallProvider - Manages Law's voice call state globally
+ * VoiceCallProvider - Manages Klaw's voice call state globally
  * 
  * This provider allows the voice call to persist when navigating away from
- * the AssistantPage, enabling users to multitask while talking to Law.
+ * the AssistantPage, enabling users to multitask while talking to Klaw.
  * 
  * Requirements: 15.1
  */
@@ -141,7 +141,7 @@ export function VoiceCallProvider({ children }: VoiceCallProviderProps) {
   }, [])
 
   /**
-   * Start a voice call with Law
+   * Start a voice call with Klaw
    */
   const startCall = useCallback(async (
     context: AssistantContext,
