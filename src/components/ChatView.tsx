@@ -26,7 +26,7 @@ export function ChatView({ messages, isLoading, hasBottomBar = false }: ChatView
 
   if (messages.length === 0 && !isLoading) {
     return (
-      <div className="h-full flex flex-col items-center justify-center text-center px-4">
+      <div className="h-full flex flex-col items-center justify-center text-center px-4 pt-4">
         <div className="w-24 h-24 mb-4 rounded-full overflow-hidden border-4 border-base-700 bg-base-800">
           <img
             src={clea.image}
@@ -49,7 +49,7 @@ export function ChatView({ messages, isLoading, hasBottomBar = false }: ChatView
   return (
     <div
       ref={scrollRef}
-      className={`h-full overflow-y-auto scrollbar-thin scrollbar-thumb-base-700 scrollbar-track-transparent ${
+      className={`h-full overflow-y-auto scrollbar-thin scrollbar-thumb-base-700 scrollbar-track-transparent pt-2 ${
         hasBottomBar ? 'pb-20' : 'pb-4'
       }`}
     >

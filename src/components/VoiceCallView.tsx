@@ -46,7 +46,7 @@ export function VoiceCallView({
   const isError = state === 'error'
 
   return (
-    <div className="h-full flex flex-col items-center pt-8 pb-24">
+    <div className="h-full flex flex-col items-center pt-4 pb-24">
       {/* Klaw's avatar with status indicator */}
       <div className="relative mb-4">
         <motion.div

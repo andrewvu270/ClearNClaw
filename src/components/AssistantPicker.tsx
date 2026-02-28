@@ -26,11 +26,11 @@ export function AssistantPicker({
   const klaw = ASSISTANT_CHARACTERS.klaw
 
   return (
-    <div className="h-full flex flex-col items-center justify-center px-4 py-6">
-      <h2 className="text-white text-lg font-medium mb-2">
+    <div className="h-full flex flex-col items-center justify-center px-4 py-6 -mt-16">
+      <h2 className="text-white text-lg font-medium mb-2 text-center">
         Choose your assistant
       </h2>
-      <p className="text-gray-500 text-xs mb-6">Same tasks, different vibes</p>
+      <p className="text-gray-500 text-xs mb-6 text-center">Same tasks, different vibes</p>
 
       <div className="flex gap-4 w-full max-w-sm justify-center">
         {/* Clea - Chat */}

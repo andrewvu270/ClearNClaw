@@ -823,7 +823,6 @@ export class VapiService {
         temperature: 0.7,
         maxTokens: 150,
       },
-      // Use Vapi's built-in voice
       voice: {
         provider: 'vapi',
         voiceId: 'Elliot',
@@ -835,12 +834,11 @@ export class VapiService {
         language: 'en',
       },
       // Timing settings
-      silenceTimeoutSeconds: 1.2,
+      silenceTimeoutSeconds: 30,
       responseDelaySeconds: 0.3,
       // Prevent interruptions and echo
       backchannelingEnabled: false,
       backgroundDenoisingEnabled: true,
-      interruptionsEnabled: false,
       metadata: {
         userId,
       },
