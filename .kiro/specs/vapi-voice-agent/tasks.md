@@ -234,60 +234,92 @@
     - Update task context after function calls
     - _Requirements: 2.1-2.4, 13.5, 14.1_
 
-- [ ] 9. Implement VapiService for Law (Voice)
+- [x] 9. Implement VapiService for Law (Voice)
 
 
 
 
-  - [ ] 9.1 Create VapiService
+
+
+
+
+
+
+  - [x] 9.1 Create VapiService
+
     - Create `src/services/vapiService.ts`
     - Initialize Vapi client with API key (VITE_VAPI_API_KEY)
     - Implement startSession, endSession methods
     - Set up event handlers for transcript, response, function call, error
     - _Requirements: 3.1, 3.2_
-  - [ ] 9.2 Configure Law's voice assistant
+
+  - [x] 9.2 Configure Law's voice assistant
+
     - Import LAW_SYSTEM_PROMPT from assistantPrompt.ts (energetic personality)
     - Define function schemas matching ChatService (same capabilities)
     - Configure voice settings (voice ID, speed, etc.)
     - NOTE: Law uses different personality prompt than Lea but same function definitions
     - _Requirements: 11.1, 12.1_
-  - [ ] 9.3 Wire function calls to FunctionCaller
+
+  - [x] 9.3 Wire function calls to FunctionCaller
+
     - Handle onFunctionCall events from Vapi
     - Execute via FunctionCaller
     - Return results to Vapi
     - _Requirements: 2.2_
 
-- [ ] 10. Build Law's voice call UI
-  - [ ] 10.1 Create VoiceCallButton component
+- [x] 10. Build Law's voice call UI
+
+
+
+
+
+  - [x] 10.1 Create VoiceCallButton component
     - Create `src/components/VoiceCallButton.tsx`
     - Show call/end call button based on state
     - Display visual indicator for call state (idle, connecting, active, error)
     - _Requirements: 1.3, 3.1, 3.2, 3.3_
-  - [ ] 10.2 Add voice call state to AssistantPage
+  - [x] 10.2 Add voice call state to AssistantPage
+
+
     - Track voice call state (idle, connecting, active, error)
     - Handle Law card tap to start/end session (from AssistantPicker)
     - Display error message with retry on connection failure
     - _Requirements: 3.1, 3.2, 3.4_
-  - [ ] 10.3 Create VoiceCallView component
+
+
+  - [x] 10.3 Create VoiceCallView component
+
     - Create `src/components/VoiceCallView.tsx`
     - Show Law's image and name during active call
     - Show transcript of conversation in real-time
     - Show end call button
     - _Requirements: 3.2, 3.3_
 
-- [ ] 11. Implement voice call persistence (Law)
-  - [ ] 11.1 Create VoiceCallProvider context
+- [x] 11. Implement voice call persistence (Law)
+
+
+
+
+  - [x] 11.1 Create VoiceCallProvider context
+
     - Create `src/contexts/VoiceCallContext.tsx`
     - Manage Law's voice call state globally
     - Wrap app in provider (App.tsx)
     - _Requirements: 15.1_
-  - [ ] 11.2 Create FloatingCallIndicator component
+
+
+  - [x] 11.2 Create FloatingCallIndicator component
+
+
     - Create `src/components/FloatingCallIndicator.tsx`
     - Show Law's image when voice call active and not on AssistantPage
     - Position above Now-Active Bar (higher z-index)
     - Navigate to AssistantPage on tap
+
     - _Requirements: 15.2, 15.3, 15.5_
-  - [ ] 11.3 Add FloatingCallIndicator to App
+
+  - [x] 11.3 Add FloatingCallIndicator to App
     - Render FloatingCallIndicator in App.tsx
     - Conditionally show based on voice call state and current route
     - _Requirements: 15.2_

@@ -7,6 +7,8 @@ interface AssistantPickerProps {
   onSelect: (mode: AssistantMode) => void
   voiceDisabled?: boolean
   voiceDisabledReason?: string
+  chatDisabled?: boolean
+  chatDisabledReason?: string
 }
 
 /**
@@ -17,6 +19,8 @@ export function AssistantPicker({
   onSelect,
   voiceDisabled,
   voiceDisabledReason,
+  chatDisabled,
+  chatDisabledReason,
 }: AssistantPickerProps) {
   const lea = ASSISTANT_CHARACTERS.lea
   const law = ASSISTANT_CHARACTERS.law
@@ -31,12 +35,17 @@ export function AssistantPicker({
       <div className="flex gap-6 w-full max-w-sm justify-center">
         {/* Lea - Chat */}
         <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onSelect('chat')}
-          className="flex-1 bg-base-800/80 border border-base-700 rounded-2xl p-6 text-center hover:border-neon-cyan/30 transition-colors group"
+          whileHover={chatDisabled ? {} : { scale: 1.02 }}
+          whileTap={chatDisabled ? {} : { scale: 0.98 }}
+          onClick={() => !chatDisabled && onSelect('chat')}
+          disabled={chatDisabled}
+          className={`flex-1 bg-base-800/80 border border-base-700 rounded-2xl p-6 text-center transition-colors group ${
+            chatDisabled
+              ? 'opacity-60 cursor-not-allowed'
+              : 'hover:border-neon-cyan/30'
+          }`}
         >
-          <div className="w-20 h-20 mx-auto mb-4">
+          <div className="w-24 h-24 mx-auto mb-4 mt-6">
             <img
               src={lea.image}
               alt={lea.name}
@@ -45,7 +54,11 @@ export function AssistantPicker({
           </div>
           <p className="text-white font-medium mb-1">{lea.name}</p>
           <p className="text-gray-500 text-xs mb-3">{lea.description}</p>
-          <div className="flex items-center justify-center gap-2 text-neon-cyan text-sm">
+          <div
+            className={`flex items-center justify-center gap-2 text-sm ${
+              chatDisabled ? 'text-gray-500' : 'text-neon-cyan'
+            }`}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 20 20"
@@ -58,7 +71,7 @@ export function AssistantPicker({
                 clipRule="evenodd"
               />
             </svg>
-            <span>Chat</span>
+            <span>{chatDisabled ? chatDisabledReason || 'Unavailable' : 'Chat'}</span>
           </div>
         </motion.button>
 

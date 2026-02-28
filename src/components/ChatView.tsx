@@ -64,7 +64,7 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
           >
             {/* Lea's avatar for assistant messages */}
             {message.role === 'assistant' && (
-              <div className="w-8 h-8 mr-2 shrink-0 mt-1">
+              <div className="w-14 h-14 mr-2 shrink-0 mt-1">
                 <img
                   src={lea.image}
                   alt={lea.name}
@@ -109,7 +109,7 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-start mb-3"
         >
-          <div className="w-8 h-8 mr-2 shrink-0 mt-1">
+          <div className="w-14 h-14 mr-2 shrink-0 mt-1">
             <img
               src={lea.image}
               alt={lea.name}

@@ -4,6 +4,7 @@ import { BottomNavBar } from '../components/BottomNavBar'
 import { ChatView } from '../components/ChatView'
 import { ChatInput } from '../components/ChatInput'
 import { AssistantPicker } from '../components/AssistantPicker'
+import { VoiceCallView } from '../components/VoiceCallView'
 import DotGrid from '../components/DotGrid'
 import { loadMessages, saveMessage, clearMessages } from '../utils/chatStorage'
 import { createAssistantContext } from '../services/assistantContext'
@@ -13,6 +14,7 @@ import {
   type ChatServiceState,
 } from '../services/chatService'
 import { useFocusTimer } from '../contexts/FocusTimerContext'
+import { useVoiceCall } from '../contexts/VoiceCallContext'
 import { ASSISTANT_CHARACTERS } from '../services/assistantPrompt'
 import type { ChatMessage, AssistantContext, TimerState } from '../types/assistant'
 import type { BigTask } from '../types'
@@ -41,6 +43,9 @@ export function AssistantPage() {
     createChatServiceState()
   )
   const [showClearConfirm, setShowClearConfirm] = useState(false)
+  
+  // Voice call state from context (Requirements: 3.1, 3.2, 3.4, 15.1)
+  const voiceCall = useVoiceCall()
 
   const timer = useFocusTimer()
   const contextRef = useRef<AssistantContext | null>(null)
@@ -67,10 +72,8 @@ export function AssistantPage() {
     const storedMessages = loadMessages(userId)
     setMessages(storedMessages)
 
-    // If there's existing chat history, go straight to chat mode
-    if (storedMessages.length > 0) {
-      setMode('chat')
-    }
+    // Always show picker first - user can choose which assistant to use
+    // (Don't auto-switch to chat mode even if there's history)
 
     // Build timer state from context
     const timerState: TimerState | null =
@@ -108,6 +111,13 @@ export function AssistantPage() {
     setContext((prev) => (prev ? { ...prev, timerState } : null))
   }, [timer.isRunning, timer.isPaused, timer.remainingSeconds, timer.activeTask])
 
+  // If voice call is active, always show voice mode (can't chat while calling)
+  useEffect(() => {
+    if (voiceCall.voiceState === 'active' || voiceCall.voiceState === 'connecting') {
+      setMode('voice')
+    }
+  }, [voiceCall.voiceState])
+
   /**
    * Timer controller for assistant functions
    */
@@ -132,23 +142,59 @@ export function AssistantPage() {
   }
 
   /**
+   * Start voice call with Law
+   * Requirements: 3.1, 3.2
+   */
+  const handleStartVoiceCall = useCallback(async () => {
+    if (!context) return
+
+    try {
+      await voiceCall.startCall(context, timerController)
+    } catch (error) {
+      console.error('Failed to start voice call:', error)
+    }
+  }, [context, timerController, voiceCall])
+
+  /**
+   * End voice call
+   * Requirements: 3.2
+   */
+  const handleEndVoiceCall = useCallback(() => {
+    voiceCall.endCall()
+  }, [voiceCall])
+
+  /**
    * Handle assistant mode selection
    */
-  const handleSelectMode = (selectedMode: 'chat' | 'voice') => {
-    if (selectedMode === 'voice') {
-      // Voice mode will be implemented in task 9-10
-      // For now, show coming soon or upgrade prompt
-      return
-    }
-    setMode(selectedMode)
-  }
+  const handleSelectMode = useCallback(
+    (selectedMode: 'chat' | 'voice') => {
+      if (selectedMode === 'voice') {
+        // Check if Vapi is available
+        if (!voiceCall.isAvailable) {
+          return
+        }
+        setMode('voice')
+        // Only start a new call if not already in a call
+        if (voiceCall.voiceState !== 'active' && voiceCall.voiceState !== 'connecting') {
+          handleStartVoiceCall()
+        }
+        return
+      }
+      setMode(selectedMode)
+    },
+    [handleStartVoiceCall, voiceCall.isAvailable, voiceCall.voiceState]
+  )
 
   /**
    * Handle going back to picker
    */
-  const handleBackToPicker = () => {
+  const handleBackToPicker = useCallback(() => {
+    // End voice call if active
+    if (voiceCall.voiceState === 'active' || voiceCall.voiceState === 'connecting') {
+      handleEndVoiceCall()
+    }
     setMode('picker')
-  }
+  }, [voiceCall.voiceState, handleEndVoiceCall])
 
   /**
    * Handle sending a message
@@ -258,6 +304,7 @@ export function AssistantPage() {
   }, [userId, context])
 
   const lea = ASSISTANT_CHARACTERS.lea
+  const currentAssistant = mode === 'voice' ? ASSISTANT_CHARACTERS.law : lea
 
   return (
     <div className="h-screen bg-base-900 flex flex-col relative">
@@ -297,12 +344,12 @@ export function AssistantPage() {
               </svg>
               <div className="w-6 h-6">
                 <img
-                  src={lea.image}
-                  alt={lea.name}
+                  src={currentAssistant.image}
+                  alt={currentAssistant.name}
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-sm">{lea.name}</span>
+              <span className="text-sm">{currentAssistant.name}</span>
             </button>
             {mode === 'chat' && messages.length > 0 && (
               <button
@@ -323,18 +370,23 @@ export function AssistantPage() {
           {mode === 'picker' && (
             <AssistantPicker
               onSelect={handleSelectMode}
-              voiceDisabled={true}
-              voiceDisabledReason="Coming soon"
+              voiceDisabled={!voiceCall.isAvailable}
+              voiceDisabledReason={!voiceCall.isAvailable ? 'Voice not configured' : undefined}
+              chatDisabled={voiceCall.voiceState === 'active' || voiceCall.voiceState === 'connecting'}
+              chatDisabledReason="End call first"
             />
           )}
           {mode === 'chat' && (
             <ChatView messages={messages} isLoading={isLoading} />
           )}
           {mode === 'voice' && (
-            // Placeholder for voice mode - will be implemented in task 10
-            <div className="h-full flex items-center justify-center">
-              <p className="text-gray-500">Voice mode coming soon...</p>
-            </div>
+            <VoiceCallView
+              state={voiceCall.voiceState}
+              transcripts={voiceCall.transcripts}
+              error={voiceCall.error}
+              onEndCall={handleEndVoiceCall}
+              onRetry={handleStartVoiceCall}
+            />
           )}
         </div>
       </div>

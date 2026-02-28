@@ -4,8 +4,10 @@ import { supabase } from './lib/supabase'
 import { ensureProfile } from './services/profileService'
 import { StimModeProvider } from './contexts/StimModeContext'
 import { FocusTimerProvider } from './contexts/FocusTimerContext'
+import { VoiceCallProvider } from './contexts/VoiceCallContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { GlobalNowActiveBar } from './components/GlobalNowActiveBar'
+import { FloatingCallIndicator } from './components/FloatingCallIndicator'
 import { LandingPage } from './pages/LandingPage'
 import { SignInPage } from './pages/SignInPage'
 import { TasksPage } from './pages/TasksPage'
@@ -84,6 +86,9 @@ function AppRoutes() {
 
       {/* Global Now-Active Bar — visible on all pages when timer is active */}
       <GlobalNowActiveBar />
+
+      {/* Floating Call Indicator — visible when voice call active and not on AssistantPage */}
+      <FloatingCallIndicator />
     </>
   )
 }
@@ -93,8 +98,10 @@ function App() {
     <BrowserRouter>
       <StimModeProvider>
         <FocusTimerProvider>
-          <AuthListener />
-          <AppRoutes />
+          <VoiceCallProvider>
+            <AuthListener />
+            <AppRoutes />
+          </VoiceCallProvider>
         </FocusTimerProvider>
       </StimModeProvider>
     </BrowserRouter>

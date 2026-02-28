@@ -105,12 +105,19 @@ describe('AssistantFunctions', () => {
             if (allSubtasks.length === 0) return true
 
             const targetSubtask = allSubtasks[0].subtask
+            
+            // The function trims the search term, so we need to use the trimmed version
+            // for our assertions to match the actual search behavior
+            const searchTerm = targetSubtask.name.trim()
+            if (searchTerm.length === 0) return true // Skip empty search terms
+            
             const matches = findSubtaskByName(tasks, targetSubtask.name)
 
-            // All matches should contain the target name (case-insensitive)
+            // All matches should contain the trimmed search term (case-insensitive)
+            // because the function trims whitespace from the search input
             for (const match of matches) {
               expect(match.subtask.name.toLowerCase()).toContain(
-                targetSubtask.name.toLowerCase()
+                searchTerm.toLowerCase()
               )
             }
 
