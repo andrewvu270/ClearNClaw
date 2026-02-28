@@ -324,7 +324,7 @@ export function AssistantPage() {
 
       {/* Header - only show in chat/voice mode */}
       {mode !== 'picker' && (
-        <div className="shrink-0 max-w-lg mx-auto w-full px-4 pt-12 relative z-10">
+        <div className="shrink-0 max-w-lg mx-auto w-full px-4 pt-[60px] relative z-10">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={handleBackToPicker}
