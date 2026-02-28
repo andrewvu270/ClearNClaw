@@ -2,12 +2,14 @@
 
 ## Overview
 
-This feature adds a dual-mode AI assistant accessible via a dedicated "Assistant" navigation tab. The assistant provides two interaction modes:
+This feature adds a dual-mode AI assistant accessible via a dedicated "Assistant" navigation tab. The assistant is presented as **two distinct characters** with different personalities:
 
-1. **Chat Mode**: Text-based interaction using Groq LLM for fast, cost-effective responses
-2. **Voice Mode**: Real-time voice conversation using Vapi for hands-free interaction
+1. **Lea** 🌙 (Chat Mode): A calm, thoughtful assistant who prefers written communication. Uses Groq LLM for fast, cost-effective text responses.
+2. **Law** ☀️ (Voice Mode): An energetic, upbeat assistant who loves talking. Uses Vapi for real-time voice conversation.
 
-Both modes share the same function-calling backend, enabling users to manage tasks, control timers, and query task status through natural conversation. The architecture separates the AI interface layer from the task operations layer, allowing the existing `taskService` to handle all database operations.
+Both characters share the same task context and function-calling backend, but have distinct personalities and conversation styles. This design turns the technical limitation of separate chat/voice sessions into a feature - users can choose the assistant that matches their current mood or preference.
+
+The character names follow the app's rhyme scheme: **Clear → Claw → Lea → Law**
 
 ## Architecture
 
@@ -15,9 +17,9 @@ Both modes share the same function-calling backend, enabling users to manage tas
 flowchart TB
     subgraph Frontend["Frontend (React)"]
         AP[AssistantPage]
-        CV[ChatView]
-        VB[VoiceButton]
-        MH[MessageHistory]
+        APK[AssistantPicker]
+        CV[ChatView<br/>Lea 🌙]
+        VV[VoiceView<br/>Law ☀️]
     end
     
     subgraph Services["Assistant Services"]
@@ -39,12 +41,12 @@ flowchart TB
         SB[Supabase]
     end
     
-    AP --> CV
-    AP --> VB
-    AP --> MH
+    AP --> APK
+    APK --> CV
+    APK --> VV
     
     CV --> CS
-    VB --> VS
+    VV --> VS
     
     CS --> GQ
     CS --> FC
@@ -60,24 +62,50 @@ flowchart TB
     AS --> GQ
 ```
 
+## Character Definitions
+
+### Lea 🌙 (Chat Assistant)
+- **Personality**: Calm, collected, reassuring, thoughtful
+- **Tone**: Soft, supportive, patient
+- **Response style**: Short clear sentences, gentle confirmations, sparse emoji use
+- **Example responses**: "Got it. ✓", "Nice progress.", "No worries, let's try another way."
+
+### Law ☀️ (Voice Assistant)  
+- **Personality**: Warm, enthusiastic, encouraging, energetic
+- **Tone**: Upbeat, conversational, natural for speech
+- **Response style**: Punchy phrases, enthusiastic confirmations, no emojis (voice)
+- **Example responses**: "Done! You're crushing it!", "Let's go!", "No biggie!"
+
 ## Components and Interfaces
 
 ### 1. AssistantPage Component
 
-The main page component that hosts the chat interface and voice controls.
+The main page component that shows character picker first, then the selected assistant's interface.
 
 ```typescript
-interface AssistantPageProps {}
+type AssistantMode = 'picker' | 'chat' | 'voice'
 
 interface AssistantPageState {
+  mode: AssistantMode
   messages: ChatMessage[]
   isLoading: boolean
-  isVoiceActive: boolean
   voiceState: 'idle' | 'connecting' | 'active' | 'error'
 }
 ```
 
-### 2. ChatMessage Interface
+### 2. AssistantPicker Component
+
+Character selection screen showing both Lea and Law side by side.
+
+```typescript
+interface AssistantPickerProps {
+  onSelect: (mode: 'chat' | 'voice') => void
+  voiceDisabled?: boolean
+  voiceDisabledReason?: string
+}
+```
+
+### 3. ChatMessage Interface
 
 ```typescript
 interface ChatMessage {

@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 import type { BigTask } from '../types'
 
 export interface NowActiveBarProps {
-  task: BigTask
+  task: BigTask | null
   remainingSeconds: number
   isPaused: boolean
   onClick: () => void
@@ -35,21 +35,21 @@ export function NowActiveBar({ task, remainingSeconds, onClick, onCancel }: NowA
           boxShadow: '0 4px 24px rgba(0, 229, 255, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.04) inset',
         }}
       >
-        {/* Task emoji */}
+        {/* Task emoji or focus icon */}
         <span
           className="w-9 h-9 flex items-center justify-center rounded-full shrink-0 select-none text-xl"
-          style={{ backgroundColor: 'rgba(255, 182, 216, 0.68)' }}
+          style={{ backgroundColor: task ? 'rgba(255, 182, 216, 0.68)' : 'rgba(0, 229, 255, 0.2)' }}
           data-testid="now-active-emoji"
         >
-          {task.emoji}
+          {task ? task.emoji : '⏱️'}
         </span>
 
-        {/* Task name (truncated) */}
+        {/* Task name or "Focus Time" */}
         <span
           className="flex-1 min-w-0 text-sm text-gray-200 truncate text-left"
           data-testid="now-active-name"
         >
-          {task.name}
+          {task ? task.name : 'Focus Time'}
         </span>
 
         {/* Remaining time */}

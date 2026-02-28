@@ -7,13 +7,14 @@ export function GlobalNowActiveBar() {
   const timer = useFocusTimer()
   const navigate = useNavigate()
 
-  const showBar = (timer.isRunning || timer.isPaused) && timer.activeTask !== null
+  // Show bar when timer is running/paused (with or without active task)
+  const showBar = timer.isRunning || timer.isPaused
 
   const handleClick = () => {
     if (timer.activeTask) {
       navigate('/tasks', { state: { focusTaskId: timer.activeTask.id } })
     } else {
-      navigate('/tasks')
+      navigate('/focus')
     }
   }
 
@@ -23,7 +24,7 @@ export function GlobalNowActiveBar() {
 
   return (
     <AnimatePresence>
-      {showBar && timer.activeTask && (
+      {showBar && (
         <NowActiveBar
           task={timer.activeTask}
           remainingSeconds={timer.remainingSeconds}

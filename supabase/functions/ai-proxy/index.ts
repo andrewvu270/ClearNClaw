@@ -173,6 +173,8 @@ async function callGroq(
     throw new Error('Groq API key not configured')
   }
 
+  // Use llama-3.3-70b-versatile - smarter model for better understanding
+  // Using text-based ACTION tags instead of tool calling for reliability
   const body: Record<string, unknown> = {
     model: 'llama-3.3-70b-versatile',
     messages,
@@ -180,10 +182,10 @@ async function callGroq(
     max_tokens: 1024,
   }
 
-  if (functions && functions.length > 0) {
-    body.tools = functions.map((f) => ({ type: 'function', function: f }))
-    body.tool_choice = 'auto'
-  }
+  // Skip tool calling - let the model respond with text and we'll parse ACTION tags
+  // This is more reliable than Groq's tool calling which often fails
+
+  console.log('Calling Groq with model:', body.model)
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -196,6 +198,7 @@ async function callGroq(
 
   if (!response.ok) {
     const errorText = await response.text()
+    console.error('Groq API error:', response.status, errorText)
     throw new Error(`Groq API error: ${response.status} - ${errorText}`)
   }
 

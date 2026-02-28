@@ -97,26 +97,55 @@ function buildLLMMessages(
 }
 
 /**
- * Parses function calls from Groq response
+ * Parses function calls from Groq response - now handles both tool_calls and text-based ACTION tags
  */
 function parseFunctionCalls(message: GroqMessage): FunctionCall[] {
-  if (!message.tool_calls || message.tool_calls.length === 0) {
-    return []
+  // First check for traditional tool_calls
+  if (message.tool_calls && message.tool_calls.length > 0) {
+    return message.tool_calls.map(toolCall => {
+      let args: Record<string, unknown> = {}
+      try {
+        args = JSON.parse(toolCall.function.arguments)
+      } catch {
+        console.error('Failed to parse function arguments:', toolCall.function.arguments)
+      }
+
+      return {
+        name: toolCall.function.name as FunctionCall['name'],
+        arguments: args,
+      }
+    })
   }
 
-  return message.tool_calls.map(toolCall => {
-    let args: Record<string, unknown> = {}
-    try {
-      args = JSON.parse(toolCall.function.arguments)
-    } catch {
-      console.error('Failed to parse function arguments:', toolCall.function.arguments)
-    }
+  // Otherwise, parse ACTION tags from text content
+  if (!message.content) return []
 
-    return {
-      name: toolCall.function.name as FunctionCall['name'],
-      arguments: args,
+  const actionRegex = /\[ACTION:(\w+):(\{[^}]+\})\]/g
+  const calls: FunctionCall[] = []
+  let match
+
+  while ((match = actionRegex.exec(message.content)) !== null) {
+    const [, functionName, argsJson] = match
+    try {
+      const args = JSON.parse(argsJson)
+      calls.push({
+        name: functionName as FunctionCall['name'],
+        arguments: args,
+      })
+    } catch {
+      console.error('Failed to parse ACTION arguments:', argsJson)
     }
-  })
+  }
+
+  return calls
+}
+
+/**
+ * Strips ACTION tags from response text for display
+ */
+function stripActionTags(text: string): string {
+  // Match [ACTION:functionName:{...json...}] - handle nested braces in JSON
+  return text.replace(/\[ACTION:\w+:\{[^[\]]*\}\]\s*/g, '').trim()
 }
 
 /**
@@ -282,8 +311,9 @@ export async function sendMessage(
         timestamp: Date.now(),
       }
 
-      // The LLM should have generated a confirmation message
-      const responseText = assistantMessage.content || getDefaultConfirmationMessage(call)
+      // Strip ACTION tags and use default message if empty
+      const strippedContent = assistantMessage.content ? stripActionTags(assistantMessage.content) : ''
+      const responseText = strippedContent || getDefaultConfirmationMessage(call)
       
       return {
         response: responseText,
@@ -311,8 +341,8 @@ export async function sendMessage(
     }
   }
 
-  // Build response text
-  let responseText = assistantMessage.content || ''
+  // Build response text - strip ACTION tags for display
+  let responseText = assistantMessage.content ? stripActionTags(assistantMessage.content) : ''
 
   // If there were function calls but no text response, use the function result messages
   if (!responseText && functionResults.length > 0) {

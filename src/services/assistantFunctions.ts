@@ -634,6 +634,40 @@ function parseTimeString(time: string): Date | null {
     return result
   }
 
+  // Handle day names (e.g., "Saturday 10am", "Monday 3pm")
+  const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
+  const dayMatch = lowerTime.match(/^(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\s+(.+)$/i)
+  if (dayMatch) {
+    const targetDay = dayNames.indexOf(dayMatch[1].toLowerCase())
+    const timeStr = dayMatch[2]
+    
+    // Parse the time part
+    const parsedTime = parseTimeOnly(timeStr)
+    if (parsedTime && targetDay >= 0) {
+      const result = new Date(now)
+      const currentDay = result.getDay()
+      let daysToAdd = targetDay - currentDay
+      if (daysToAdd <= 0) daysToAdd += 7 // Next week if same day or past
+      
+      result.setDate(result.getDate() + daysToAdd)
+      result.setHours(parsedTime.hours, parsedTime.minutes, 0, 0)
+      return result
+    }
+  }
+
+  // Handle "tomorrow Xam/pm" format
+  const tomorrowMatch = lowerTime.match(/^tomorrow\s+(.+)$/i)
+  if (tomorrowMatch) {
+    const timeStr = tomorrowMatch[1]
+    const parsedTime = parseTimeOnly(timeStr)
+    if (parsedTime) {
+      const result = new Date(now)
+      result.setDate(result.getDate() + 1)
+      result.setHours(parsedTime.hours, parsedTime.minutes, 0, 0)
+      return result
+    }
+  }
+
   // Handle "Xpm" or "Xam" format
   const ampmMatch = lowerTime.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i)
   if (ampmMatch) {
@@ -669,6 +703,39 @@ function parseTimeString(time: string): Date | null {
         result.setDate(result.getDate() + 1)
       }
       return result
+    }
+  }
+
+  return null
+}
+
+/**
+ * Helper to parse just the time portion (e.g., "10am", "3:30pm", "15:00")
+ */
+function parseTimeOnly(timeStr: string): { hours: number; minutes: number } | null {
+  const lower = timeStr.toLowerCase().trim()
+  
+  // Handle "Xpm" or "Xam" format
+  const ampmMatch = lower.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i)
+  if (ampmMatch) {
+    let hours = parseInt(ampmMatch[1], 10)
+    const minutes = ampmMatch[2] ? parseInt(ampmMatch[2], 10) : 0
+    const isPm = ampmMatch[3].toLowerCase() === 'pm'
+
+    if (isPm && hours !== 12) hours += 12
+    if (!isPm && hours === 12) hours = 0
+
+    return { hours, minutes }
+  }
+
+  // Handle "HH:MM" 24-hour format
+  const timeMatch = lower.match(/^(\d{1,2}):(\d{2})$/)
+  if (timeMatch) {
+    const hours = parseInt(timeMatch[1], 10)
+    const minutes = parseInt(timeMatch[2], 10)
+
+    if (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60) {
+      return { hours, minutes }
     }
   }
 

@@ -187,47 +187,69 @@
     - **Property 12: Chat history limited to 50 messages**
     - **Validates: Requirements 14.1, 14.2**
 
-- [ ] 7. Checkpoint - Ensure all tests pass
+- [x] 7. Checkpoint - Ensure all tests pass
+
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 8. Build AssistantPage UI
-  - [ ] 8.1 Create AssistantPage component
+- [x] 8. Build AssistantPage UI
+
+
+
+
+
+
+  - [x] 8.1 Create AssistantPage component
+
     - Create `src/pages/AssistantPage.tsx`
     - Add page layout with chat area and input
     - Load chat history on mount
     - Load task context on mount
     - _Requirements: 1.1, 1.2, 14.2_
-  - [ ] 8.2 Create ChatView component
+
+  - [x] 8.2 Create ChatView component
+
     - Create `src/components/ChatView.tsx`
     - Display message history (user right, assistant left)
     - Auto-scroll to latest message
     - Show loading indicator while waiting for response
+
     - _Requirements: 2.3, 2.4_
-  - [ ] 8.3 Create ChatInput component
+  - [x] 8.3 Create ChatInput component
+
     - Create `src/components/ChatInput.tsx`
     - Text input with send button
     - Handle Enter key to send
     - Disable while loading
     - _Requirements: 2.1_
-  - [ ] 8.4 Wire up chat flow
+  - [x] 8.4 Wire up chat flow
+
+
     - Connect ChatInput to ChatService
     - Update message history after each exchange
     - Persist messages to localStorage
     - Update task context after function calls
     - _Requirements: 2.1-2.4, 13.5, 14.1_
 
-- [ ] 9. Implement VapiService
+- [ ] 9. Implement VapiService for Law (Voice)
+
+
+
+
   - [ ] 9.1 Create VapiService
     - Create `src/services/vapiService.ts`
     - Initialize Vapi client with API key (VITE_VAPI_API_KEY)
     - Implement startSession, endSession methods
     - Set up event handlers for transcript, response, function call, error
     - _Requirements: 3.1, 3.2_
-  - [ ] 9.2 Configure Vapi assistant
-    - Import system prompt from assistantPrompt.ts (same as ChatService)
-    - Define function schemas matching ChatService
+  - [ ] 9.2 Configure Law's voice assistant
+    - Import LAW_SYSTEM_PROMPT from assistantPrompt.ts (energetic personality)
+    - Define function schemas matching ChatService (same capabilities)
     - Configure voice settings (voice ID, speed, etc.)
-    - NOTE: System prompt MUST be identical to ChatService to ensure consistent behavior
+    - NOTE: Law uses different personality prompt than Lea but same function definitions
     - _Requirements: 11.1, 12.1_
   - [ ] 9.3 Wire function calls to FunctionCaller
     - Handle onFunctionCall events from Vapi
@@ -235,7 +257,7 @@
     - Return results to Vapi
     - _Requirements: 2.2_
 
-- [ ] 10. Build voice call UI
+- [ ] 10. Build Law's voice call UI
   - [ ] 10.1 Create VoiceCallButton component
     - Create `src/components/VoiceCallButton.tsx`
     - Show call/end call button based on state
@@ -243,25 +265,25 @@
     - _Requirements: 1.3, 3.1, 3.2, 3.3_
   - [ ] 10.2 Add voice call state to AssistantPage
     - Track voice call state (idle, connecting, active, error)
-    - Handle call button tap to start/end session
+    - Handle Law card tap to start/end session (from AssistantPicker)
     - Display error message with retry on connection failure
     - _Requirements: 3.1, 3.2, 3.4_
   - [ ] 10.3 Create VoiceCallView component
     - Create `src/components/VoiceCallView.tsx`
-    - Full-screen or prominent visual change during active call
+    - Show Law's image and name during active call
     - Show transcript of conversation in real-time
     - Show end call button
     - _Requirements: 3.2, 3.3_
 
-- [ ] 11. Implement voice call persistence
+- [ ] 11. Implement voice call persistence (Law)
   - [ ] 11.1 Create VoiceCallProvider context
     - Create `src/contexts/VoiceCallContext.tsx`
-    - Manage voice call state globally
+    - Manage Law's voice call state globally
     - Wrap app in provider (App.tsx)
     - _Requirements: 15.1_
   - [ ] 11.2 Create FloatingCallIndicator component
     - Create `src/components/FloatingCallIndicator.tsx`
-    - Show when voice call active and not on AssistantPage
+    - Show Law's image when voice call active and not on AssistantPage
     - Position above Now-Active Bar (higher z-index)
     - Navigate to AssistantPage on tap
     - _Requirements: 15.2, 15.3, 15.5_
@@ -270,16 +292,16 @@
     - Conditionally show based on voice call state and current route
     - _Requirements: 15.2_
 
-- [ ] 12. Implement tier gating for voice
+- [ ] 12. Implement tier gating for Law (voice)
   - [ ] 12.1 Create UpgradePrompt component
     - Create `src/components/UpgradePrompt.tsx`
-    - Display voice benefits and upgrade CTA
+    - Display Law's voice benefits and upgrade CTA
     - Include "Maybe later" dismiss option
     - Friendly, inviting tone (not a wall)
     - _Requirements: 16.1, 16.2_
-  - [ ] 12.2 Add tier check to voice call button
+  - [ ] 12.2 Add tier check to Law selection
     - Check user tier before starting Vapi session
-    - Show UpgradePrompt for free-tier users
+    - Show UpgradePrompt for free-tier users when tapping Law
     - Allow paid users to proceed
     - _Requirements: 16.1, 16.3_
   - [ ] 12.3 Handle subscription expiry
@@ -287,20 +309,20 @@
     - Show renewal prompt
     - _Requirements: 16.4_
   - [ ] 12.4 Implement rate limiting
-    - Add chat rate limit tracking in localStorage (100/day free, 500/day paid)
-    - Add voice_minutes_used and voice_minutes_reset_month columns to profiles table
+    - Add chat rate limit tracking in localStorage (100/day free, 500/day paid) for Lea
+    - Add voice_minutes_used and voice_minutes_reset_month columns to profiles table for Law
     - Track voice minutes in Supabase (60 min/month paid)
     - NOTE: Voice limits MUST be in Supabase (not localStorage) to prevent gaming - real cost per minute
     - Show limit reached messages when exceeded
     - _Requirements: Cost guardrails_
 
 - [ ] 13. Final integration and polish
-  - [ ] 13.1 Add "goodbye" voice command to end call
+  - [ ] 13.1 Add "goodbye" voice command to end Law's call
     - Detect "goodbye" in Vapi transcript
     - Automatically end session
     - _Requirements: 3.2_
-  - [ ] 13.2 Add clear chat functionality
-    - Add "Clear chat" button to AssistantPage
+  - [ ] 13.2 Add clear chat functionality for Lea
+    - Add "Clear chat" button to AssistantPage (already implemented)
     - Show confirmation before clearing
     - Clear localStorage on confirm
     - _Requirements: 14.3_
