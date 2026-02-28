@@ -1,4 +1,4 @@
-export const CACHE_KEY = 'claw_toys_cache'
+export const CACHE_KEY = 'claw_toys_cache_v2'
 export const DEFAULT_TTL = 604800000 // 7 days in milliseconds
 
 const M = 2.2
