@@ -107,19 +107,6 @@ const toolCallArb = fc.record({
   }),
 })
 
-const validRequestArb = (userId: string): fc.Arbitrary<VapiWebhookRequest> =>
-  fc.record({
-    message: fc.record({
-      type: fc.constant('tool-calls' as const),
-      toolCalls: fc.array(toolCallArb, { minLength: 1, maxLength: 3 }),
-      call: fc.record({
-        id: fc.uuid(),
-        assistantId: fc.option(fc.uuid(), { nil: undefined }),
-        metadata: fc.constant({ userId }),
-      }),
-    }),
-  })
-
 const requestWithoutUserIdArb: fc.Arbitrary<VapiWebhookRequest> = fc.record({
   message: fc.record({
     type: fc.constant('tool-calls' as const),
