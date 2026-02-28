@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { BottomNavBar } from '../components/BottomNavBar'
 import DotGrid from '../components/DotGrid'
 import * as coinService from '../services/coinService'
+import { getProfile } from '../services/profileService'
 // @ts-expect-error — ClawMachine is a JSX component without types
 import ClawMachine from '../components/ClawMachine'
 
@@ -14,13 +15,17 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
   const [message, setMessage] = useState('')
   const [resetCount, setResetCount] = useState(0)
   const [toast, setToast] = useState<string | null>(null)
+  const [slipRateReduction, setSlipRateReduction] = useState(0)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         setUserId(session.user.id)
         coinService.getCoinBalance(session.user.id).then(setCoins)
-        // Fetch reset count
+        // Fetch profile for reset count and slip rate reduction
+        getProfile(session.user.id).then(profile => {
+          setSlipRateReduction(profile.slipRateReduction)
+        })
         supabase
           .from('profiles')
           .select('claw_reset_count')
@@ -46,6 +51,10 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
   useEffect(() => {
     if (active && userId) {
       coinService.getCoinBalance(userId).then(setCoins)
+      // Also refresh slip rate reduction
+      getProfile(userId).then(profile => {
+        setSlipRateReduction(profile.slipRateReduction)
+      })
     }
   }, [active, userId])
 
@@ -191,7 +200,7 @@ export function ClawMachinePage({ active = true }: { active?: boolean }) {
       </div>
 
       <div className="flex-1 min-h-0 max-w-lg mx-auto w-full flex items-center justify-center -mt-10 sm:-mt-4">
-        <ClawMachine key={seed} playable={playing} onTurnEnd={handleTurnEnd} onDrop={handleDrop} onSuccess={handleSuccess} userId={userId} active={active} seed={seed} />
+        <ClawMachine key={seed} playable={playing} onTurnEnd={handleTurnEnd} onDrop={handleDrop} onSuccess={handleSuccess} userId={userId} active={active} seed={seed} slipRate={0.4 - slipRateReduction} />
       </div>
 
       <BottomNavBar />

@@ -37,6 +37,8 @@ export interface UserProfile {
   id: string
   coins: number
   completedTasks: number
+  slipRateReduction: number
+  lastRewardedMilestone: number
 }
 
 export interface Toy {

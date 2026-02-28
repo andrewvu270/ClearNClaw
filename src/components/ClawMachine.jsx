@@ -15,7 +15,7 @@ const adjustAngle = (angle) => {
   return a < 0 ? a + 360 : a
 }
 
-export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSuccess, userId, active = true, seed }) {
+export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSuccess, userId, active = true, seed, slipRate = 0.4 }) {
   const boxRef = useRef(null)
   const machineRef = useRef(null)
   const machineTopRef = useRef(null)
@@ -363,8 +363,8 @@ export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSucc
 
           // Only drop if shadow is NOT over the chute
           if (!isOverChute) {
-            // 30% chance to drop
-            if (Math.random() <= 0.4) {
+            // Use dynamic slip rate (default 0.4, reduced by milestones, min 0.1)
+            if (Math.random() <= slipRate) {
               dropToyToOriginal()
             }
           }
@@ -427,7 +427,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSucc
     moveObject(vertRail, {
       moveKey: 'x',
       target: g.machineWidth - g.objects.armJoint.w - MACHINE_BUFFER.x,
-      moveTime: 45,
+      moveTime: 30,
       next: stopHoriBtnAndActivateVertBtn,
     })
   }
@@ -444,7 +444,7 @@ export default function ClawMachine({ playable = true, onTurnEnd, onDrop, onSucc
     moveObject(g.objects.armJoint, {
       moveKey: 'y',
       target: MACHINE_BUFFER.y,
-      moveTime: 50,
+      moveTime: 30,
     })
   }
 

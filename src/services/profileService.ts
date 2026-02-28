@@ -5,7 +5,7 @@ import { createDemoTaskIfNeeded } from './taskService'
 export async function getProfile(userId: string): Promise<UserProfile> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, coins, completed_tasks')
+    .select('id, coins, completed_tasks, slip_rate_reduction, last_rewarded_milestone')
     .eq('id', userId)
     .single()
 
@@ -15,6 +15,8 @@ export async function getProfile(userId: string): Promise<UserProfile> {
     id: data.id as string,
     coins: data.coins as number,
     completedTasks: data.completed_tasks as number,
+    slipRateReduction: (data.slip_rate_reduction as number) ?? 0,
+    lastRewardedMilestone: (data.last_rewarded_milestone as number) ?? 0,
   }
 }
 
@@ -25,7 +27,7 @@ export async function getProfile(userId: string): Promise<UserProfile> {
 export async function ensureProfile(userId: string): Promise<UserProfile> {
   const { data } = await supabase
     .from('profiles')
-    .select('id, coins, completed_tasks')
+    .select('id, coins, completed_tasks, slip_rate_reduction, last_rewarded_milestone')
     .eq('id', userId)
     .single()
 
@@ -36,13 +38,15 @@ export async function ensureProfile(userId: string): Promise<UserProfile> {
       id: data.id as string,
       coins: data.coins as number,
       completedTasks: data.completed_tasks as number,
+      slipRateReduction: (data.slip_rate_reduction as number) ?? 0,
+      lastRewardedMilestone: (data.last_rewarded_milestone as number) ?? 0,
     }
   }
 
   const { data: newProfile, error } = await supabase
     .from('profiles')
     .insert({ id: userId })
-    .select('id, coins, completed_tasks')
+    .select('id, coins, completed_tasks, slip_rate_reduction, last_rewarded_milestone')
     .single()
 
   if (error || !newProfile) throw error ?? new Error('Failed to create profile')
@@ -54,6 +58,8 @@ export async function ensureProfile(userId: string): Promise<UserProfile> {
     id: newProfile.id as string,
     coins: newProfile.coins as number,
     completedTasks: newProfile.completed_tasks as number,
+    slipRateReduction: (newProfile.slip_rate_reduction as number) ?? 0,
+    lastRewardedMilestone: (newProfile.last_rewarded_milestone as number) ?? 0,
   }
 }
 

@@ -40,6 +40,7 @@ export function ProfilePage() {
   const [toys, setToys] = useState<UserToy[]>([])
   const [toyData, setToyData] = useState<Record<string, ToyInfo>>({})
   const [selectedToy, setSelectedToy] = useState<{ name: string; count: number; sprite?: string; isRare?: boolean; isElectric?: boolean; group?: string } | null>(null)
+  const [infoPopup, setInfoPopup] = useState<'coins' | 'tasks' | null>(null)
   const [dataLoaded, setDataLoaded] = useState(false)
   const [pushSupported, setPushSupported] = useState(() => isPushSupported())
   const [pushEnabled, setPushEnabled] = useState(false)
@@ -57,11 +58,11 @@ export function ProfilePage() {
 
   // Lock body scroll when popup is open
   useEffect(() => {
-    if (selectedToy || settingsOpen) {
+    if (selectedToy || settingsOpen || infoPopup) {
       document.body.style.overflow = 'hidden'
       return () => { document.body.style.overflow = '' }
     }
-  }, [selectedToy, settingsOpen])
+  }, [selectedToy, settingsOpen, infoPopup])
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -174,18 +175,24 @@ export function ProfilePage() {
             transition={{ duration: 0.3 }}
           >
         <div className="flex items-center justify-center gap-4 mb-6">
-          <div className="flex items-center gap-1.5">
+          <button
+            onClick={() => setInfoPopup('tasks')}
+            className="flex items-center gap-1.5 hover:bg-base-800 rounded-xl px-2 py-1 transition-colors"
+          >
             <span className="text-2xl">✅</span>
             <span className="font-pixel text-neon-green text-sm">
               {profile?.completedTasks ?? '...'}
             </span>
-          </div>
-          <div className="flex items-center gap-1.5">
+          </button>
+          <button
+            onClick={() => setInfoPopup('coins')}
+            className="flex items-center gap-1.5 hover:bg-base-800 rounded-xl px-2 py-1 transition-colors"
+          >
             <span className="text-2xl">🪙</span>
             <span className="font-pixel text-neon-yellow text-sm">
               {profile?.coins ?? '...'}
             </span>
-          </div>
+          </button>
           <button
             onClick={() => setSettingsOpen(true)}
             className="flex items-center gap-1.5 hover:bg-base-800 rounded-xl px-2 py-1 transition-colors"
@@ -324,6 +331,56 @@ export function ProfilePage() {
                   <ToyPopupContent toy={selectedToy} />
                 )}
               </TiltedCard>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Info popup for coins/tasks */}
+      <AnimatePresence>
+        {infoPopup && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-6"
+            onClick={() => setInfoPopup(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              onClick={e => e.stopPropagation()}
+              className="bg-base-800 border border-base-700 rounded-2xl p-6 max-w-xs w-full text-center"
+            >
+              {infoPopup === 'coins' ? (
+                <div className="space-y-4">
+                  <span className="text-5xl block">🪙</span>
+                  <p className="text-white text-lg font-medium">Coin Rewards</p>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    Earn <span className="text-neon-yellow">+10 coins</span> for every <span className="text-white">20 tasks</span> completed
+                  </p>
+                  <div className="pt-2 border-t border-base-700">
+                    <p className="text-gray-500 text-xs">
+                      Progress: <span className="text-gray-300">{profile?.completedTasks ?? 0}</span> / <span className="text-gray-300">{Math.ceil(((profile?.completedTasks ?? 0) + 1) / 20) * 20}</span>
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <span className="text-5xl block">🎯</span>
+                  <p className="text-white text-lg font-medium">Task Milestones</p>
+                  <p className="text-gray-300 text-sm leading-relaxed">
+                    Reduce slip chance by <span className="text-neon-cyan">0.5%</span> for every <span className="text-white">20 tasks</span> completed
+                  </p>
+                  <div className="pt-2 border-t border-base-700">
+                    <p className="text-gray-500 text-xs">
+                      Current slip rate: <span className="text-gray-300">{Math.round((0.4 - (profile?.slipRateReduction ?? 0)) * 100)}%</span> <span className="text-gray-600">(Min: 10%)</span>
+                    </p>
+                  </div>
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

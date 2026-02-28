@@ -13,6 +13,9 @@ export interface VoiceTranscript {
   isFinal: boolean
 }
 
+/** Reason why the call ended */
+export type CallEndReason = 'user' | 'auto' | 'error' | null
+
 /**
  * Voice call context state
  */
@@ -25,12 +28,16 @@ interface VoiceCallContextState {
   transcripts: VoiceTranscript[]
   /** Whether Vapi is available (API key configured) */
   isAvailable: boolean
+  /** Reason why the last call ended */
+  endReason: CallEndReason
   /** Start a voice call with Klaw */
   startCall: (context: AssistantContext, timerController?: TimerController) => Promise<void>
   /** End the current voice call */
   endCall: () => void
   /** Clear error state */
   clearError: () => void
+  /** Clear end reason (after showing toast) */
+  clearEndReason: () => void
 }
 
 const VoiceCallContext = createContext<VoiceCallContextState | null>(null)
@@ -62,9 +69,11 @@ export function VoiceCallProvider({ children }: VoiceCallProviderProps) {
   const [voiceState, setVoiceState] = useState<VoiceState>('idle')
   const [error, setError] = useState<string | null>(null)
   const [transcripts, setTranscripts] = useState<VoiceTranscript[]>([])
+  const [endReason, setEndReason] = useState<CallEndReason>(null)
   
   const vapiService = useRef<VapiService>(getVapiService())
   const isSetup = useRef(false)
+  const userEndedCall = useRef(false)
 
   /**
    * Set up Vapi event handlers (only once)
@@ -79,6 +88,11 @@ export function VoiceCallProvider({ children }: VoiceCallProviderProps) {
     vapi.onStateChange((state) => {
       setVoiceState(state)
       if (state === 'idle') {
+        // If call ended but user didn't press end button, it was auto-ended
+        if (!userEndedCall.current) {
+          setEndReason('auto')
+        }
+        userEndedCall.current = false
         setError(null)
       }
     })
@@ -164,6 +178,7 @@ export function VoiceCallProvider({ children }: VoiceCallProviderProps) {
    * End the current voice call
    */
   const endCall = useCallback(() => {
+    userEndedCall.current = true
     vapiService.current.endSession()
     setVoiceState('idle')
   }, [])
@@ -175,14 +190,23 @@ export function VoiceCallProvider({ children }: VoiceCallProviderProps) {
     setError(null)
   }, [])
 
+  /**
+   * Clear end reason (after showing toast)
+   */
+  const clearEndReason = useCallback(() => {
+    setEndReason(null)
+  }, [])
+
   const value: VoiceCallContextState = {
     voiceState,
     error,
     transcripts,
     isAvailable: vapiService.current.isAvailable(),
+    endReason,
     startCall,
     endCall,
     clearError,
+    clearEndReason,
   }
 
   return (

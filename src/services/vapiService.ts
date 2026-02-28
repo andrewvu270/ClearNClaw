@@ -834,7 +834,8 @@ export class VapiService {
         language: 'en',
       },
       // Timing settings
-      silenceTimeoutSeconds: 30,
+      silenceTimeoutSeconds: 10,
+      maxDurationSeconds: 300, // 5 min max call duration
       responseDelaySeconds: 0.3,
       // Prevent interruptions and echo
       backchannelingEnabled: false,

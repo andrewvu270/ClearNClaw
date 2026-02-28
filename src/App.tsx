@@ -1,10 +1,11 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { supabase } from './lib/supabase'
 import { ensureProfile } from './services/profileService'
 import { StimModeProvider } from './contexts/StimModeContext'
 import { FocusTimerProvider } from './contexts/FocusTimerContext'
-import { VoiceCallProvider } from './contexts/VoiceCallContext'
+import { VoiceCallProvider, useVoiceCall } from './contexts/VoiceCallContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import { GlobalNowActiveBar } from './components/GlobalNowActiveBar'
 import { FloatingCallIndicator } from './components/FloatingCallIndicator'
@@ -14,6 +15,15 @@ import { TasksPage } from './pages/TasksPage'
 import { ClawMachinePage } from './pages/ClawMachinePage'
 import { ProfilePage } from './pages/ProfilePage'
 import { AssistantPage } from './pages/AssistantPage'
+
+/** Funny messages for auto-ended calls (silence or max duration) */
+const AUTO_END_MESSAGES = [
+  "📞 Call ended — Klaw got bored of the silence.",
+  "🎤 Klaw hung up. Too quiet over there!",
+  "😴 Call auto-ended. Klaw needs stimulation!",
+  "🤖 Klaw disconnected. Say something next time!",
+  "📴 Call dropped — the void was too loud.",
+]
 
 function AuthListener() {
   const navigate = useNavigate()
@@ -53,6 +63,24 @@ function AuthListener() {
 function AppRoutes() {
   const location = useLocation()
   const isClawPage = location.pathname === '/claw-machine'
+  const voiceCall = useVoiceCall()
+  const [toast, setToast] = useState<string | null>(null)
+
+  // Show toast when call auto-ends (silence timeout or max duration)
+  useEffect(() => {
+    if (voiceCall.endReason === 'auto') {
+      const msg = AUTO_END_MESSAGES[Math.floor(Math.random() * AUTO_END_MESSAGES.length)]
+      setToast(msg)
+      voiceCall.clearEndReason()
+    }
+  }, [voiceCall.endReason, voiceCall.clearEndReason])
+
+  // Auto-dismiss toast
+  useEffect(() => {
+    if (!toast) return
+    const timeout = setTimeout(() => setToast(null), 4000)
+    return () => clearTimeout(timeout)
+  }, [toast])
 
   return (
     <>
@@ -89,6 +117,20 @@ function AppRoutes() {
 
       {/* Floating Call Indicator — visible when voice call active and not on AssistantPage */}
       <FloatingCallIndicator />
+
+      {/* Global toast for voice call max duration */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="fixed bottom-24 inset-x-0 mx-auto w-fit z-[70] px-5 py-2.5 bg-base-800/90 backdrop-blur-sm border border-neon-cyan/20 rounded-2xl text-white text-sm font-body shadow-lg max-w-[85vw] text-center"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
