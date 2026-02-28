@@ -5,7 +5,12 @@ import { SplitText as GSAPSplitText } from 'gsap/SplitText'
 import { useGSAP } from '@gsap/react'
 import './Shuffle.css'
 
-gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP)
+// Register plugins once
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(ScrollTrigger, GSAPSplitText, useGSAP)
+  // Disable ScrollTrigger's 100vh fix to prevent DOM conflicts with React
+  ScrollTrigger.config({ ignoreMobileResize: true })
+}
 
 interface ShuffleProps {
   text: string
@@ -339,6 +344,12 @@ const Shuffle: React.FC<ShuffleProps> = ({
         st.kill()
         removeHover()
         teardown()
+        // Kill all ScrollTriggers associated with this element to prevent orphaned DOM nodes
+        ScrollTrigger.getAll().forEach((trigger) => {
+          if (trigger.trigger === el) {
+            trigger.kill()
+          }
+        })
         setReady(false)
       }
     },
