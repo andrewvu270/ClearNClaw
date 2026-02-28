@@ -90,17 +90,16 @@ describe('createDemoTaskIfNeeded', () => {
     // Verify the task was created with correct properties
     expect(insertMock).toHaveBeenCalledWith({
       user_id: userId,
-      name: '🎮 Build Your First Win',
+      name: 'Build Your First Win',
       emoji: '🎮',
       energy_tag: 'low',
     })
     
     // Verify sub-tasks were created
     expect(subTasksInsertMock).toHaveBeenCalledWith([
-      { big_task_id: 'demo-task-id', name: 'Press Start', emoji: '▶️', sort_order: 0 },
-      { big_task_id: 'demo-task-id', name: 'Complete 1 action', emoji: '✅', sort_order: 1 },
-      { big_task_id: 'demo-task-id', name: 'Win your first coin', emoji: '🪙', sort_order: 2 },
-      { big_task_id: 'demo-task-id', name: 'Play claw machine', emoji: '🕹️', sort_order: 3 },
+      { big_task_id: 'demo-task-id', name: 'Start a timer for your focus task', emoji: '⏱️', sort_order: 0 },
+      { big_task_id: 'demo-task-id', name: 'Tap task or subtask name/emoji to edit', emoji: '✏️', sort_order: 1 },
+      { big_task_id: 'demo-task-id', name: 'Complete all subtasks to earn coins & play claw machine', emoji: '🪙', sort_order: 2 },
     ])
   })
 

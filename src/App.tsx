@@ -11,6 +11,7 @@ import { SignInPage } from './pages/SignInPage'
 import { TasksPage } from './pages/TasksPage'
 import { ClawMachinePage } from './pages/ClawMachinePage'
 import { ProfilePage } from './pages/ProfilePage'
+import { AssistantPage } from './pages/AssistantPage'
 
 function AuthListener() {
   const navigate = useNavigate()
@@ -75,6 +76,7 @@ function AppRoutes() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/tasks" element={<ProtectedRoute><TasksPage /></ProtectedRoute>} />
+          <Route path="/assistant" element={<ProtectedRoute><AssistantPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

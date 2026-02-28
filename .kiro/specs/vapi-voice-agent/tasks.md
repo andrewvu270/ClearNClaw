@@ -1,25 +1,45 @@
 # Implementation Plan
 
-- [ ] 1. Set up project structure and core interfaces
-  - [ ] 1.1 Create assistant types and interfaces
+- [x] 1. Set up project structure and core interfaces
+
+
+
+
+
+
+  - [x] 1.1 Create assistant types and interfaces
+
     - Create `src/types/assistant.ts` with ChatMessage, AssistantContext, FunctionCall, FunctionResult interfaces
     - Define AssistantFunction type union for all available functions
     - _Requirements: 2.2, 13.1_
-  - [ ] 1.2 Add environment variables
+  - [x] 1.2 Add environment variables
+
+
     - Add VITE_GROQ_API_KEY to .env
     - Add VITE_VAPI_API_KEY to .env
     - Update .env.example with placeholder values
     - _Requirements: Setup_
-  - [ ] 1.3 Add assistant route and navigation
+  - [x] 1.3 Add assistant route and navigation
+
+
     - Add AssistantPage route to App.tsx
     - Add Assistant nav item to BottomNavBar component
     - _Requirements: 1.1_
-  - [ ] 1.4 Write property test for assistant types
+  - [x] 1.4 Write property test for assistant types
+
+
     - **Property 8: Function calls include required parameters**
     - **Validates: Requirements 2.2**
 
-- [ ] 2. Implement FunctionCaller service
-  - [ ] 2.1 Create FunctionCaller with task operations
+- [x] 2. Implement FunctionCaller service
+
+
+
+
+
+  - [x] 2.1 Create FunctionCaller with task operations
+
+
     - Create `src/services/assistantFunctions.ts`
     - Implement createTask, completeTask, completeSubtask functions
     - Implement renameTask, renameSubtask, addSubtask, removeSubtask functions
@@ -27,94 +47,143 @@
     - Wire to existing taskService methods (use same completion handler that triggers coin awarding)
     - NOTE: completeTask must go through existing completion flow to award coins, not direct DB write
     - _Requirements: 4.2, 5.1, 5.2, 6.1-6.4, 7.1, 7.2_
-  - [ ] 2.2 Add scheduling and timer functions
+  - [x] 2.2 Add scheduling and timer functions
+
+
     - Implement setReminder, removeReminder, setRecurrence functions
     - Implement startTimer, pauseTimer, resumeTimer, stopTimer, getTimerStatus functions
     - Wire timer functions to FocusTimerContext
     - _Requirements: 8.1-8.3, 9.1-9.5_
-  - [ ] 2.3 Add query functions
+  - [x] 2.3 Add query functions
+
+
     - Implement listTasks, getTaskDetails, getNextSubtask functions
     - Implement "what's next" logic (active timer task first, then highest progress)
     - _Requirements: 10.1-10.3_
-  - [ ] 2.4 Write property tests for FunctionCaller
+  - [x] 2.4 Write property tests for FunctionCaller
+
+
     - **Property 2: Completion operations mark the correct item**
     - **Property 3: Edit operations modify the correct items**
     - **Property 5: Timer operations correctly transition state**
     - **Property 6: Query operations return accurate information**
     - **Validates: Requirements 5.1, 5.2, 6.1-6.4, 9.1-9.5, 10.1-10.3**
 
-- [ ] 3. Implement task context and pronoun resolution
-  - [ ] 3.0 Add database migration for updated_at column
+- [x] 3. Implement task context and pronoun resolution
+
+
+
+
+
+
+  - [x] 3.0 Add database migration for updated_at column
+
     - Create migration to add updated_at column to big_tasks table
     - Add trigger to auto-update updated_at on row changes
     - _Requirements: 13.2_
-  - [ ] 3.1 Create task context loader
+
+
+  - [x] 3.1 Create task context loader
     - Create `src/services/assistantContext.ts`
     - Implement loadTaskContext function (20 most recently updated active tasks)
+
     - Query using updated_at column ordering
     - _Requirements: 13.1, 13.2_
-  - [ ] 3.2 Implement pronoun resolution
+  - [x] 3.2 Implement pronoun resolution
     - Track lastReferencedTaskId and lastReferencedSubtaskId in conversation state
+
     - Implement resolveTaskReference function for "it", "that task", "the last one"
     - Return clarification request when reference cannot be resolved
     - _Requirements: 13.3, 13.4_
-  - [ ] 3.3 Implement context update after operations
+
+
+  - [x] 3.3 Implement context update after operations
     - Update task context after create, complete, edit, delete operations
     - Update lastReferencedTaskId after each task-specific operation
     - _Requirements: 13.5_
-  - [ ] 3.4 Write property tests for context management
+  - [x] 3.4 Write property tests for context management
     - **Property 9: Task context limited to 20 active tasks**
     - **Property 10: Pronoun resolution uses last referenced task**
     - **Property 11: Context updates after task operations**
     - **Validates: Requirements 13.1-13.5**
 
-- [ ] 4. Checkpoint - Ensure all tests pass
+- [x] 4. Checkpoint - Ensure all tests pass
+
+
+
+
+
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Implement ChatService with Groq
-  - [ ] 5.1 Create shared system prompt
+- [x] 5. Implement ChatService with Groq
+
+
+
+
+
+
+  - [x] 5.1 Create shared system prompt
+
     - Create `src/services/assistantPrompt.ts`
     - Define system prompt constant (shared between Groq and Vapi)
     - Include assistant personality, capabilities, and confirmation behavior
     - _Requirements: 11.1, 12.1_
-  - [ ] 5.2 Create ChatService
+  - [x] 5.2 Create ChatService
+
+
     - Create `src/services/chatService.ts`
     - Set up Groq client with API key from environment (VITE_GROQ_API_KEY)
     - Import system prompt from assistantPrompt.ts
     - Define function schemas for all AssistantFunctions
     - _Requirements: 2.1, 11.1, 12.1_
-  - [ ] 5.3 Implement message processing
+  - [x] 5.3 Implement message processing
+
     - Implement sendMessage with function calling support
     - Parse function calls from Groq response
     - Execute function calls via FunctionCaller
     - Return assistant response text
     - _Requirements: 2.1, 2.2_
-  - [ ] 5.4 Add confirmation flow for task creation
+
+  - [x] 5.4 Add confirmation flow for task creation
     - Track pending task creation in conversation state
     - Require explicit confirmation before calling createTask with confirmed=true
     - _Requirements: 4.1, 4.6, 4.7_
-  - [ ] 5.5 Add confirmation flow for destructive actions
+  - [x] 5.5 Add confirmation flow for destructive actions
+
     - Track pending destructive actions (delete, clear)
     - Require explicit confirmation before executing
     - _Requirements: 7.3_
-  - [ ] 5.6 Add disambiguation handling
+  - [x] 5.6 Add disambiguation handling
+
+
     - Detect when multiple tasks/subtasks match a name
     - Return clarification request instead of executing
     - _Requirements: 5.3_
-  - [ ] 5.7 Write property tests for ChatService
+  - [x] 5.7 Write property tests for ChatService
+
+
     - **Property 1: Task creation requires explicit confirmation**
     - **Property 4: Destructive operations require confirmation**
     - **Property 7: Disambiguation requested for ambiguous matches**
     - **Validates: Requirements 4.1, 4.7, 5.3, 7.3**
 
-- [ ] 6. Implement chat history persistence
-  - [ ] 6.1 Create chat storage utilities
+- [x] 6. Implement chat history persistence
+
+
+
+
+
+
+  - [x] 6.1 Create chat storage utilities
+
     - Create `src/utils/chatStorage.ts`
     - Implement saveMessage, loadMessages, clearMessages functions
     - Use localStorage with key `assistant_chat_${userId}`
     - Limit stored messages to 50 (remove oldest when exceeded)
     - _Requirements: 14.1, 14.2, 14.3_
-  - [ ] 6.2 Write property test for chat storage
+
+  - [x] 6.2 Write property test for chat storage
+
     - **Property 12: Chat history limited to 50 messages**
     - **Validates: Requirements 14.1, 14.2**
 
