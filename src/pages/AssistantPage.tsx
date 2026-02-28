@@ -142,7 +142,7 @@ export function AssistantPage() {
   }
 
   /**
-   * Start voice call with Law
+   * Start voice call with Klaw
    * Requirements: 3.1, 3.2
    */
   const handleStartVoiceCall = useCallback(async () => {
@@ -303,8 +303,8 @@ export function AssistantPage() {
     setChatState(createChatServiceState())
   }, [userId, context])
 
-  const lea = ASSISTANT_CHARACTERS.lea
-  const currentAssistant = mode === 'voice' ? ASSISTANT_CHARACTERS.law : lea
+  const clea = ASSISTANT_CHARACTERS.clea
+  const currentAssistant = mode === 'voice' ? ASSISTANT_CHARACTERS.klaw : clea
 
   return (
     <div className="h-screen bg-base-900 flex flex-col relative">
@@ -377,7 +377,7 @@ export function AssistantPage() {
             />
           )}
           {mode === 'chat' && (
-            <ChatView messages={messages} isLoading={isLoading} />
+            <ChatView messages={messages} isLoading={isLoading} hasBottomBar={timer.isRunning || timer.isPaused} />
           )}
           {mode === 'voice' && (
             <VoiceCallView
@@ -391,15 +391,13 @@ export function AssistantPage() {
         </div>
       </div>
 
-      {/* Input area - only show in chat mode */}
+      {/* Input area - only show in chat mode, fixed position */}
       {mode === 'chat' && (
-        <div className={`shrink-0 max-w-lg mx-auto w-full px-4 relative z-10 ${
-          timer.isRunning || timer.isPaused ? 'pb-36' : 'pb-24'
-        }`}>
+        <div className="shrink-0 max-w-lg mx-auto w-full px-4 pb-24 relative z-10">
           <ChatInput
             onSend={handleSendMessage}
             disabled={isLoading || !context}
-            placeholder={context ? 'Message Lea...' : 'Loading...'}
+            placeholder={context ? 'Message Clea...' : 'Loading...'}
           />
         </div>
       )}

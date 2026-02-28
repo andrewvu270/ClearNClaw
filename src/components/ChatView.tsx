@@ -6,17 +6,18 @@ import { ASSISTANT_CHARACTERS } from '../services/assistantPrompt'
 interface ChatViewProps {
   messages: ChatMessage[]
   isLoading: boolean
+  hasBottomBar?: boolean
 }
 
 /**
  * ChatView - Displays chat message history with auto-scroll
- * Features Lea as the chat assistant character
+ * Features Clea as the chat assistant character
  * Requirements: 2.3, 2.4
  */
-export function ChatView({ messages, isLoading }: ChatViewProps) {
+export function ChatView({ messages, isLoading, hasBottomBar = false }: ChatViewProps) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
-  const lea = ASSISTANT_CHARACTERS.lea
+  const clea = ASSISTANT_CHARACTERS.clea
 
   // Auto-scroll to bottom when messages change or loading state changes
   useEffect(() => {
@@ -26,17 +27,17 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
   if (messages.length === 0 && !isLoading) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center px-4">
-        <div className="w-20 h-20 mb-4">
+        <div className="w-24 h-24 mb-4 rounded-full overflow-hidden border-4 border-base-700 bg-base-800">
           <img
-            src={lea.image}
-            alt={lea.name}
+            src={clea.image}
+            alt={clea.name}
             className="w-full h-full object-contain"
           />
         </div>
         <p className="text-white text-sm font-medium mb-1">
-          Hi, I'm {lea.name}
+          Hi, I'm {clea.name}
         </p>
-        <p className="text-gray-400 text-xs mb-3">{lea.description}</p>
+        <p className="text-gray-400 text-xs mb-3">{clea.description}</p>
         <p className="text-gray-500 text-xs max-w-[240px]">
           Ask me to create tasks, check things off, start timers, or tell you
           what's next.
@@ -48,7 +49,9 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
   return (
     <div
       ref={scrollRef}
-      className="h-full overflow-y-auto pb-4 scrollbar-thin scrollbar-thumb-base-700 scrollbar-track-transparent"
+      className={`h-full overflow-y-auto scrollbar-thin scrollbar-thumb-base-700 scrollbar-track-transparent ${
+        hasBottomBar ? 'pb-20' : 'pb-4'
+      }`}
     >
       <AnimatePresence initial={false}>
         {messages.map((message) => (
@@ -62,12 +65,12 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
               message.role === 'user' ? 'justify-end' : 'justify-start'
             }`}
           >
-            {/* Lea's avatar for assistant messages */}
+            {/* Clea's avatar for assistant messages */}
             {message.role === 'assistant' && (
-              <div className="w-14 h-14 mr-2 shrink-0 mt-1">
+              <div className="w-14 h-14 mr-2 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-base-700 bg-base-800">
                 <img
-                  src={lea.image}
-                  alt={lea.name}
+                  src={clea.image}
+                  alt={clea.name}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -109,10 +112,10 @@ export function ChatView({ messages, isLoading }: ChatViewProps) {
           animate={{ opacity: 1, y: 0 }}
           className="flex justify-start mb-3"
         >
-          <div className="w-14 h-14 mr-2 shrink-0 mt-1">
+          <div className="w-14 h-14 mr-2 shrink-0 mt-1 rounded-full overflow-hidden border-2 border-base-700 bg-base-800">
             <img
-              src={lea.image}
-              alt={lea.name}
+              src={clea.image}
+              alt={clea.name}
               className="w-full h-full object-contain"
             />
           </div>

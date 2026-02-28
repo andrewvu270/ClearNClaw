@@ -1,6 +1,6 @@
 import { supabase } from '../lib/supabase'
 import type { AssistantContext, ChatMessage, FunctionCall, FunctionResult } from '../types/assistant'
-import { ASSISTANT_SYSTEM_PROMPT, ASSISTANT_FUNCTION_DEFINITIONS } from './assistantPrompt'
+import { CLEA_SYSTEM_PROMPT, ASSISTANT_FUNCTION_DEFINITIONS } from './assistantPrompt'
 import { executeFunctionCall, type FunctionContext, type TimerController } from './assistantFunctions'
 import { updateContextAfterOperation } from './assistantContext'
 
@@ -79,7 +79,7 @@ function buildLLMMessages(
     ? `\n\nTimer: ${context.timerState.isRunning ? 'Running' : context.timerState.isPaused ? 'Paused' : 'Idle'}, ${Math.ceil(context.timerState.remainingSeconds / 60)} min remaining`
     : ''
 
-  const systemPrompt = ASSISTANT_SYSTEM_PROMPT + taskSummary + timerInfo
+  const systemPrompt = CLEA_SYSTEM_PROMPT + taskSummary + timerInfo
 
   // Get recent conversation history (limited to manage tokens)
   const recentHistory = context.conversationHistory.slice(-LLM_CONTEXT_MESSAGE_LIMIT)
@@ -300,8 +300,30 @@ export async function sendMessage(
   // Parse any function calls
   const functionCalls = parseFunctionCalls(assistantMessage)
 
+  // Deduplicate createTask calls (LLM sometimes calls multiple times)
+  const seenCreateTaskDescriptions = new Set<string>()
+  const deduplicatedCalls = functionCalls.filter((call) => {
+    if (call.name === 'createTask') {
+      const desc = (call.arguments.description as string)?.toLowerCase().trim()
+      if (!desc) return true
+      if (seenCreateTaskDescriptions.has(desc)) {
+        console.log(`Skipping duplicate createTask: ${desc}`)
+        return false
+      }
+      // Also check for progressive duplicates
+      for (const existing of seenCreateTaskDescriptions) {
+        if (desc.includes(existing) || existing.includes(desc)) {
+          console.log(`Skipping progressive duplicate createTask: ${desc}`)
+          return false
+        }
+      }
+      seenCreateTaskDescriptions.add(desc)
+    }
+    return true
+  })
+
   // Process function calls
-  for (const call of functionCalls) {
+  for (const call of deduplicatedCalls) {
     // Check if this requires confirmation but doesn't have it
     if (requiresConfirmation(call) && !hasConfirmation(call)) {
       // Store as pending action and return the confirmation request
@@ -344,9 +366,20 @@ export async function sendMessage(
   // Build response text - strip ACTION tags for display
   let responseText = assistantMessage.content ? stripActionTags(assistantMessage.content) : ''
 
-  // If there were function calls but no text response, use the function result messages
-  if (!responseText && functionResults.length > 0) {
-    responseText = functionResults.map(r => r.message).join(' ')
+  // If there were function calls, prioritize showing their results
+  if (functionResults.length > 0) {
+    // Check if any function calls failed
+    const failedResults = functionResults.filter(r => !r.success)
+    
+    if (failedResults.length > 0) {
+      // If functions failed, show the error messages instead of the LLM's optimistic text
+      // This prevents confusing dual responses like "When would you like the reminder?" + "Task not found"
+      responseText = failedResults.map(r => r.message).join(' ')
+    } else if (!responseText) {
+      // If no text response but functions succeeded, use success messages
+      responseText = functionResults.map(r => r.message).join(' ')
+    }
+    // If functions succeeded AND there's text, keep the LLM's text (it's usually a nice confirmation)
   }
 
   return {

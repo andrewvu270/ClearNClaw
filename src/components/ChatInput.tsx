@@ -47,7 +47,7 @@ export function ChatInput({ onSend, disabled = false, placeholder = "Type a mess
   const canSend = value.trim().length > 0 && !disabled
 
   return (
-    <div className="flex items-end gap-2 bg-base-800/80 backdrop-blur-sm border border-base-700 rounded-2xl p-2">
+    <div className="flex items-end gap-2 bg-base-800/80 backdrop-blur-sm border border-base-700 rounded-2xl p-2 safe-area-inset-bottom">
       <textarea
         ref={inputRef}
         value={value}
@@ -56,13 +56,14 @@ export function ChatInput({ onSend, disabled = false, placeholder = "Type a mess
         disabled={disabled}
         placeholder={placeholder}
         rows={1}
-        className="flex-1 bg-transparent text-white text-sm placeholder-gray-500 resize-none outline-none px-2 py-2 max-h-[120px] scrollbar-thin scrollbar-thumb-base-700 scrollbar-track-transparent"
+        className="flex-1 bg-transparent text-white text-base placeholder-gray-500 resize-none outline-none px-3 py-2.5 max-h-[120px] scrollbar-thin scrollbar-thumb-base-700 scrollbar-track-transparent"
+        style={{ fontSize: '16px' }} // Prevents iOS zoom on focus
         aria-label="Message input"
       />
       <button
         onClick={handleSend}
         disabled={!canSend}
-        className={`shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+        className={`shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all ${
           canSend
             ? 'bg-neon-cyan/20 text-neon-cyan hover:bg-neon-cyan/30 active:scale-95'
             : 'bg-base-700/50 text-gray-600 cursor-not-allowed'

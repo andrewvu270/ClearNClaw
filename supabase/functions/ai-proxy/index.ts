@@ -26,7 +26,7 @@ serve(async (req) => {
   }
 
   try {
-    // Verify user is authenticated
+    // Verify authorization
     const authHeader = req.headers.get('Authorization')
     console.log('Auth header present:', !!authHeader)
     
@@ -38,30 +38,43 @@ serve(async (req) => {
       })
     }
 
-    // Create Supabase client to verify the user
+    // Check if this is a service role call (from vapi-webhook)
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')
-    console.log('Supabase URL present:', !!supabaseUrl)
-    console.log('Supabase Anon Key present:', !!supabaseAnonKey)
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
     
-    const supabaseClient = createClient(
-      supabaseUrl ?? '',
-      supabaseAnonKey ?? '',
-      { global: { headers: { Authorization: authHeader } } }
-    )
+    // Extract the token from the header
+    const token = authHeader.replace('Bearer ', '')
+    
+    // If it's the service role key, allow the request (internal call from vapi-webhook)
+    const isServiceRoleCall = token === supabaseServiceKey
+    
+    if (isServiceRoleCall) {
+      console.log('Service role call - authorized')
+    } else {
+      // Verify user is authenticated via Supabase Auth
+      console.log('Supabase URL present:', !!supabaseUrl)
+      console.log('Supabase Anon Key present:', !!supabaseAnonKey)
+      
+      const supabaseClient = createClient(
+        supabaseUrl ?? '',
+        supabaseAnonKey ?? '',
+        { global: { headers: { Authorization: authHeader } } }
+      )
 
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
-    console.log('Auth result - user:', !!user, 'error:', authError?.message)
-    
-    if (authError || !user) {
-      console.log('Auth failed - returning 401')
-      return new Response(JSON.stringify({ error: 'Unauthorized', details: authError?.message }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser()
+      console.log('Auth result - user:', !!user, 'error:', authError?.message)
+      
+      if (authError || !user) {
+        console.log('Auth failed - returning 401')
+        return new Response(JSON.stringify({ error: 'Unauthorized', details: authError?.message }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+      
+      console.log('Auth successful for user:', user.id)
     }
-    
-    console.log('Auth successful for user:', user.id)
 
     const body: RequestBody = await req.json()
 

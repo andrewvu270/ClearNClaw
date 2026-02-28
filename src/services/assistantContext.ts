@@ -277,3 +277,54 @@ export async function updateContextAfterOperation(
     lastReferencedSubtaskId: subtaskId ?? (taskId ? null : context.lastReferencedSubtaskId),
   }
 }
+
+/**
+ * Formats tasks for voice-friendly reading in Klaw's system prompt.
+ * Produces a concise summary suitable for voice output (no emojis, no bullet points).
+ * 
+ * @param tasks - Array of BigTask objects
+ * @returns Voice-friendly formatted string for the {taskContext} placeholder
+ */
+export function formatTasksForVoice(tasks: BigTask[]): string {
+  if (tasks.length === 0) {
+    return 'No active tasks right now.'
+  }
+
+  const taskSummaries = tasks.slice(0, 5).map(task => {
+    const completedCount = task.subTasks.filter(st => st.completed).length
+    const totalCount = task.subTasks.length
+    const nextSubtask = task.subTasks.find(st => !st.completed)
+    
+    let summary = `"${task.name}"`
+    if (totalCount > 0) {
+      summary += ` (${completedCount} of ${totalCount} subtasks done`
+      if (nextSubtask) {
+        summary += `, next: "${nextSubtask.name}"`
+      }
+      summary += ')'
+    }
+    return summary
+  })
+
+  let result = `Active tasks: ${taskSummaries.join(', ')}`
+  
+  if (tasks.length > 5) {
+    result += ` ...and ${tasks.length - 5} more.`
+  }
+
+  return result
+}
+
+/**
+ * Injects task context into Klaw's voice prompt.
+ * Replaces the {taskContext} placeholder with formatted task information.
+ * 
+ * @param promptTemplate - The prompt template with {taskContext} placeholder
+ * @param tasks - Array of BigTask objects to format
+ * @returns Complete prompt with task context injected
+ */
+export function injectTaskContext(promptTemplate: string, tasks: BigTask[]): string {
+  const taskContext = formatTasksForVoice(tasks)
+  // Use split/join instead of replace to avoid special regex replacement patterns ($&, $`, etc.)
+  return promptTemplate.split('{taskContext}').join(taskContext)
+}
