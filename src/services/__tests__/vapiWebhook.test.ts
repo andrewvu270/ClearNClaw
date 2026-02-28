@@ -290,7 +290,6 @@ describe('Vapi Webhook Authentication', () => {
         fc.property(
           secretArb,
           fc.uuid(),
-          validRequestArb(fc.sample(fc.uuid(), 1)[0]),
           (secret, expectedUserId) => {
             const request = {
               message: {
@@ -316,14 +315,6 @@ describe('Vapi Webhook Authentication', () => {
 
   describe('Secret validation edge cases', () => {
     it('treats empty string secret as invalid', () => {
-      const request = {
-        message: {
-          type: 'tool-calls' as const,
-          toolCalls: [],
-          call: { id: 'call-1', metadata: { userId: 'user-123' } },
-        },
-      }
-
       const result = validateVapiSecret('', 'valid-secret')
       expect(result.valid).toBe(false)
       expect(result.status).toBe(401)

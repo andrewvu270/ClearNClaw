@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase'
-import type { AssistantContext, ChatMessage, FunctionCall, FunctionResult } from '../types/assistant'
+import type { AssistantContext, FunctionCall, FunctionResult } from '../types/assistant'
 import { CLEA_SYSTEM_PROMPT, ASSISTANT_FUNCTION_DEFINITIONS } from './assistantPrompt'
 import { executeFunctionCall, type FunctionContext, type TimerController } from './assistantFunctions'
 import { updateContextAfterOperation } from './assistantContext'

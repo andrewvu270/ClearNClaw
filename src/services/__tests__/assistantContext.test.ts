@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest'
 import * as fc from 'fast-check'
-import type { BigTask } from '../../types'
 import type { ConversationState } from '../../types/assistant'
 import {
   MAX_CONTEXT_TASKS,
