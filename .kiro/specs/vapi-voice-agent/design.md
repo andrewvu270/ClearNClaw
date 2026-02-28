@@ -4,12 +4,12 @@
 
 This feature adds a dual-mode AI assistant accessible via a dedicated "Assistant" navigation tab. The assistant is presented as **two distinct characters** with different personalities:
 
-1. **Lea** 🌙 (Chat Mode): A calm, thoughtful assistant who prefers written communication. Uses Groq LLM for fast, cost-effective text responses.
-2. **Law** ☀️ (Voice Mode): An energetic, upbeat assistant who loves talking. Uses Vapi for real-time voice conversation.
+1. **Clea** 🌙 (Chat Mode): A calm, thoughtful assistant who prefers written communication. Uses Groq LLM for fast, cost-effective text responses.
+2. **Klaw** ☀️ (Voice Mode): An energetic, upbeat assistant who loves talking. Uses Vapi for real-time voice conversation.
 
 Both characters share the same task context and function-calling backend, but have distinct personalities and conversation styles. This design turns the technical limitation of separate chat/voice sessions into a feature - users can choose the assistant that matches their current mood or preference.
 
-The character names follow the app's rhyme scheme: **Clear → Claw → Lea → Law**
+The character names follow the app's rhyme scheme: **Clear → Claw → Clea → Klaw**
 
 ## Architecture
 
@@ -18,8 +18,8 @@ flowchart TB
     subgraph Frontend["Frontend (React)"]
         AP[AssistantPage]
         APK[AssistantPicker]
-        CV[ChatView<br/>Lea 🌙]
-        VV[VoiceView<br/>Law ☀️]
+        CV[ChatView<br/>Clea 🌙]
+        VV[VoiceView<br/>Klaw ☀️]
     end
     
     subgraph Services["Assistant Services"]
@@ -64,13 +64,13 @@ flowchart TB
 
 ## Character Definitions
 
-### Lea 🌙 (Chat Assistant)
+### Clea 🌙 (Chat Assistant)
 - **Personality**: Calm, collected, reassuring, thoughtful
 - **Tone**: Soft, supportive, patient
 - **Response style**: Short clear sentences, gentle confirmations, sparse emoji use
 - **Example responses**: "Got it. ✓", "Nice progress.", "No worries, let's try another way."
 
-### Law ☀️ (Voice Assistant)  
+### Klaw ☀️ (Voice Assistant)  
 - **Personality**: Warm, enthusiastic, encouraging, energetic
 - **Tone**: Upbeat, conversational, natural for speech
 - **Response style**: Punchy phrases, enthusiastic confirmations, no emojis (voice)
@@ -95,7 +95,7 @@ interface AssistantPageState {
 
 ### 2. AssistantPicker Component
 
-Character selection screen showing both Lea and Law side by side.
+Character selection screen showing both Clea and Klaw side by side.
 
 ```typescript
 interface AssistantPickerProps {

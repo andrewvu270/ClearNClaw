@@ -234,7 +234,7 @@
     - Update task context after function calls
     - _Requirements: 2.1-2.4, 13.5, 14.1_
 
-- [x] 9. Implement VapiService for Law (Voice)
+- [x] 9. Implement VapiService for Klaw (Voice)
 
 
 
@@ -253,12 +253,12 @@
     - Set up event handlers for transcript, response, function call, error
     - _Requirements: 3.1, 3.2_
 
-  - [x] 9.2 Configure Law's voice assistant
+  - [x] 9.2 Configure Klaw's voice assistant
 
-    - Import LAW_SYSTEM_PROMPT from assistantPrompt.ts (energetic personality)
+    - Import KLAW_SYSTEM_PROMPT from assistantPrompt.ts (energetic personality)
     - Define function schemas matching ChatService (same capabilities)
     - Configure voice settings (voice ID, speed, etc.)
-    - NOTE: Law uses different personality prompt than Lea but same function definitions
+    - NOTE: Klaw uses different personality prompt than Clea but same function definitions
     - _Requirements: 11.1, 12.1_
 
   - [x] 9.3 Wire function calls to FunctionCaller
@@ -268,7 +268,7 @@
     - Return results to Vapi
     - _Requirements: 2.2_
 
-- [x] 10. Build Law's voice call UI
+- [x] 10. Build Klaw's voice call UI
 
 
 
@@ -283,7 +283,7 @@
 
 
     - Track voice call state (idle, connecting, active, error)
-    - Handle Law card tap to start/end session (from AssistantPicker)
+    - Handle Klaw card tap to start/end session (from AssistantPicker)
     - Display error message with retry on connection failure
     - _Requirements: 3.1, 3.2, 3.4_
 
@@ -291,12 +291,12 @@
   - [x] 10.3 Create VoiceCallView component
 
     - Create `src/components/VoiceCallView.tsx`
-    - Show Law's image and name during active call
+    - Show Klaw's image and name during active call
     - Show transcript of conversation in real-time
     - Show end call button
     - _Requirements: 3.2, 3.3_
 
-- [x] 11. Implement voice call persistence (Law)
+- [x] 11. Implement voice call persistence (Klaw)
 
 
 
@@ -304,7 +304,7 @@
   - [x] 11.1 Create VoiceCallProvider context
 
     - Create `src/contexts/VoiceCallContext.tsx`
-    - Manage Law's voice call state globally
+    - Manage Klaw's voice call state globally
     - Wrap app in provider (App.tsx)
     - _Requirements: 15.1_
 
@@ -313,7 +313,7 @@
 
 
     - Create `src/components/FloatingCallIndicator.tsx`
-    - Show Law's image when voice call active and not on AssistantPage
+    - Show Klaw's image when voice call active and not on AssistantPage
     - Position above Now-Active Bar (higher z-index)
     - Navigate to AssistantPage on tap
 
@@ -324,16 +324,16 @@
     - Conditionally show based on voice call state and current route
     - _Requirements: 15.2_
 
-- [ ] 12. Implement tier gating for Law (voice)
+- [ ] 12. Implement tier gating for Klaw (voice)
   - [ ] 12.1 Create UpgradePrompt component
     - Create `src/components/UpgradePrompt.tsx`
-    - Display Law's voice benefits and upgrade CTA
+    - Display Klaw's voice benefits and upgrade CTA
     - Include "Maybe later" dismiss option
     - Friendly, inviting tone (not a wall)
     - _Requirements: 16.1, 16.2_
-  - [ ] 12.2 Add tier check to Law selection
+  - [ ] 12.2 Add tier check to Klaw selection
     - Check user tier before starting Vapi session
-    - Show UpgradePrompt for free-tier users when tapping Law
+    - Show UpgradePrompt for free-tier users when tapping Klaw
     - Allow paid users to proceed
     - _Requirements: 16.1, 16.3_
   - [ ] 12.3 Handle subscription expiry
@@ -341,19 +341,19 @@
     - Show renewal prompt
     - _Requirements: 16.4_
   - [ ] 12.4 Implement rate limiting
-    - Add chat rate limit tracking in localStorage (100/day free, 500/day paid) for Lea
-    - Add voice_minutes_used and voice_minutes_reset_month columns to profiles table for Law
+    - Add chat rate limit tracking in localStorage (100/day free, 500/day paid) for Clea
+    - Add voice_minutes_used and voice_minutes_reset_month columns to profiles table for Klaw
     - Track voice minutes in Supabase (60 min/month paid)
     - NOTE: Voice limits MUST be in Supabase (not localStorage) to prevent gaming - real cost per minute
     - Show limit reached messages when exceeded
     - _Requirements: Cost guardrails_
 
 - [ ] 13. Final integration and polish
-  - [ ] 13.1 Add "goodbye" voice command to end Law's call
+  - [ ] 13.1 Add "goodbye" voice command to end Klaw's call
     - Detect "goodbye" in Vapi transcript
     - Automatically end session
     - _Requirements: 3.2_
-  - [ ] 13.2 Add clear chat functionality for Lea
+  - [ ] 13.2 Add clear chat functionality for Clea
     - Add "Clear chat" button to AssistantPage (already implemented)
     - Show confirmation before clearing
     - Clear localStorage on confirm
